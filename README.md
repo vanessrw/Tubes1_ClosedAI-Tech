@@ -1,5 +1,4 @@
-# Tubes1_ClosedAI-Tech.
-Tugas Besar I IF2211 Strategi Algoritma
+# Tugas Besar I IF2211 Strategi Algoritma
 Pemanfaatan Algoritma Greedy dalam Aplikasi Permainan “Galaxio”
 
 ## Anggota
