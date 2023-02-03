@@ -1,0 +1,134 @@
+{
+  "RunnerUrl": "http://localhost",
+  "RunnerPort": "5000",
+  "BotCount": 4,
+  "TickRate": 50,
+  "MaxRounds": 1000,
+  "MapRadius": 1000,
+  "MapRadiusRatio": 250,
+  "StartRadius": 300,
+  "StartRadiusRatio": 75,
+  "StartingPlayerSize": 10,
+  "MinimumPlayerSize": 5,
+  "ConsumptionRatio": {
+    "1": 0.5,
+    "3": 0.5,
+    "7": 2
+  },
+  "ScoreRates": {
+    "1": 10,
+    "2": 1,
+    "3": 1,
+    "7": 2
+  },
+  "Speeds": {
+    "Ratio": 200,
+    "StartingSpeed": 20
+  },
+  "Seeds": {
+    "PlayerSeeds": [ 21345, 11223, 12334, 54675 ],
+    "MaxSeed": 30000,
+    "MinSeed": 1
+  },
+  "WorldFood": {
+    "MaxStartingSeparation": 50,
+    "MaxSeparation": 500,
+    "MinSeparation": 20,
+    "PlayerSafeFood": 4,
+    "StartingFoodCount": 1000,
+    "StartingFoodCountRatio": 125,
+    "FoodSize": 1,
+    "MaxConsumptionSize": 200,
+    "SuperfoodSpawnChance": 0.1,
+    "SuperfoodEffectDuration": 5,
+    "MaxSuperfoodCount": 80
+  },
+  "Wormholes": {
+    "Count": 16,
+    "CountRatio": 2,
+    "Seed": 4648964,
+    "MinSeed": 10000,
+    "MaxSeed": 50000,
+    "StartSize": 20,
+    "MinSize": 4,
+    "MaxSize": 80,
+    "GrowthRate": 1.001,
+    "MinSeparation": 300
+  },
+  "Afterburners": {
+    "SizeConsumptionPerTick": 1,
+    "SpeedFactor": 5
+  },
+  "GasClouds": {
+    "GenerateCount": 30,
+    "MaxCount": 12,
+    "MaxCountRatio": 1.5,
+    "Seed": null,
+    "MinSeed": 1000,
+    "MaxSeed": 2000,
+    "Modular": 1784,
+    "ModularRatio": 223,
+    "GenerateSubCount": 50,
+    "MaxSubCount": 20,
+    "SubModular": 153,
+    "Multiplier": 7,
+    "ConstX": 0.5,
+    "ConstY": 0.3,
+    "ConstXY": 2,
+    "RepeatingValuesLimit": 3,
+    "MinDistanceFromPlayers": 200,
+    "NodeSizeMultiplier": 0.8,
+    "AffectPerTick": 1
+  },
+  "AsteroidFields": {
+    "GenerateCount": 30,
+    "MaxCount": 12,
+    "MaxCountRatio": 1.5,
+    "Seed": null,
+    "MinSeed": 1000,
+    "MaxSeed": 2000,
+    "Modular": 1784,
+    "ModularRatio": 223,
+    "GenerateSubCount": 50,
+    "MaxSubCount": 10,
+    "SubModular": 153,
+    "Multiplier": 7,
+    "ConstX": 0.5,
+    "ConstY": 0.3,
+    "ConstXY": 2,
+    "RepeatingValuesLimit": 3,
+    "MinDistanceFromPlayers": 200,
+    "NodeSizeMultiplier": 0.8,
+    "AffectPerTick": 1
+  },
+  "Torpedo": {
+    "ChargeRate": 10,
+    "MaxChargeCount": 5,
+    "Speed":60,
+    "Size":10,
+    "Cost":5
+  },
+  "Supernova": {
+    "Seed": null,
+    "MinSeed": 10000,
+    "MaxSeed": 10000000,
+    "Size": 10,
+    "Speed": 20,
+    "ExplosionSizeRatio": 0.25,
+    "Damage": 20
+  },
+  "Teleport": {
+    "ChargeRate": 10,
+    "StartChargeCount": 1,
+    "MaxChargeCount": 10,
+    "Speed": 20,
+    "Cost": 20,
+    "Size": 10
+  },
+  "Shield": {
+    "ChargeRate": 20,
+    "MaxChargeCount": 1,
+    "Cost": 20,
+    "ShieldEffectDuration": 20
+  }
+}
