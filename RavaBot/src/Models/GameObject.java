@@ -10,14 +10,35 @@ public class GameObject {
   public Integer currentHeading;
   public Position position;
   public ObjectTypes gameObjectType;
+  public Integer Effects;
+  public Integer TorpedoSalvoCount;
+  public Integer SupernovaAvailable;
+  public Integer TeleportCount;
+  public Integer ShieldCount;
 
-  public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, Position position, ObjectTypes gameObjectType) {
+  public enum Effects {
+    Afterburner(1),
+    AsteroidField(2),
+    GasCloud(4),
+    Superfood(8),
+    Shield(16);
+  }
+
+  public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
+  Position position, ObjectTypes gameObjectType, Integer effect, Integer torpedo_count,
+  Integer supernova_avail, Integer teleport_count, Integer shield_count) {
     this.id = id;
     this.size = size;
     this.speed = speed;
     this.currentHeading = currentHeading;
     this.position = position;
     this.gameObjectType = gameObjectType;
+    this.Effects = effect;
+    this.TeleportCount = torpedo_count;
+    this.SupernovaAvailable = supernova_avail;
+    this.TeleportCount = teleport_count;
+    this.ShieldCount = shield_count;
+
   }
 
   public UUID getId() {
@@ -56,13 +77,36 @@ public class GameObject {
     return gameObjectType;
   }
 
+  public int getTorpedoCount(){
+    return TorpedoSalvoCount;
+  }
+
+  public int getSupernovaCount(){
+    return SupernovaAvailable;
+  }
+
+  public int getTeleportCount(){
+    return TeleportCount;
+  }
+
+  public int getShieldCount(){
+    return ShieldCount;
+  }
+
   public void setGameObjectType(ObjectTypes gameObjectType) {
     this.gameObjectType = gameObjectType;
   }
 
+  public void setEffects(int x){
+    this.Effects = x;
+  }
+
+  // 5 statelist trakhir blm lengkap
   public static GameObject FromStateList(UUID id, List<Integer> stateList)
   {
     Position position = new Position(stateList.get(4), stateList.get(5));
-    return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)));
+    return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)),
+    stateList.get(), stateList(), stateList(), stateList(), stateList());
   }
 }
+
