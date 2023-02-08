@@ -105,8 +105,25 @@ public class GameObject {
   public static GameObject FromStateList(UUID id, List<Integer> stateList)
   {
     Position position = new Position(stateList.get(4), stateList.get(5));
+
+    if (stateList.size() == 7){
+      return new GameObject(
+        id,
+        stateList.get(0),
+        stateList.get(1),
+        stateList.get(2),
+        position,
+        ObjectTypes.valueOf(stateList.get(3)),
+        0,
+        stateList.get(6),
+        0,
+        0,
+        0
+      ); 
+    }
+
     return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)),
-    stateList.get(), stateList(), stateList(), stateList(), stateList());
+    stateList.get(7), stateList(6), stateList(8), stateList(10), stateList(9));
   }
 }
 
