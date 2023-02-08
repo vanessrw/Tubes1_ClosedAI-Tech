@@ -10,7 +10,7 @@ public class GameObject {
   public Integer currentHeading;
   public Position position;
   public ObjectTypes gameObjectType;
-  public Effects Effects;
+  public Integer effects;
   public Integer TorpedoSalvoCount;
   public Integer SupernovaAvailable;
   public Integer TeleportCount;
@@ -26,11 +26,10 @@ public class GameObject {
     this.position = position;
     this.gameObjectType = gameObjectType;
     this.Effects = effect;
-    this.TeleportCount = torpedo_count;
+    this.TorpedoSalvoCount = torpedo_count;
     this.SupernovaAvailable = supernova_avail;
     this.TeleportCount = teleport_count;
     this.ShieldCount = shield_count;
-
   }
 
   public UUID getId() {
@@ -89,8 +88,12 @@ public class GameObject {
     this.gameObjectType = gameObjectType;
   }
 
-  public void setEffects(Effects effects){
-    this.Effects = effects;
+  public void setEffects(Integer effects) {
+    this.effects = effects;
+  }
+
+  public Integer getEffects() {
+    return this.effects;
   }
 
   // 5 statelist trakhir blm lengkap

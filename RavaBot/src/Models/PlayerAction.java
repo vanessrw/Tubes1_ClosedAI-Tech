@@ -32,6 +32,4 @@ public class PlayerAction {
   public void setHeading(int heading) {
     this.heading = heading;
   }
-
-
 }
