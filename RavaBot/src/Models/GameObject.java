@@ -10,19 +10,11 @@ public class GameObject {
   public Integer currentHeading;
   public Position position;
   public ObjectTypes gameObjectType;
-  public Integer Effects;
+  public Effects Effects;
   public Integer TorpedoSalvoCount;
   public Integer SupernovaAvailable;
   public Integer TeleportCount;
   public Integer ShieldCount;
-
-  public enum Effects {
-    Afterburner(1),
-    AsteroidField(2),
-    GasCloud(4),
-    Superfood(8),
-    Shield(16);
-  }
 
   public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
   Position position, ObjectTypes gameObjectType, Integer effect, Integer torpedo_count,
@@ -97,8 +89,8 @@ public class GameObject {
     this.gameObjectType = gameObjectType;
   }
 
-  public void setEffects(int x){
-    this.Effects = x;
+  public void setEffects(Effects effects){
+    this.Effects = effects;
   }
 
   // 5 statelist trakhir blm lengkap

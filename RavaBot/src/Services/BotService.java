@@ -80,5 +80,10 @@ public class BotService {
         return (int) (v * (180 / Math.PI));
     }
 
+    // public List<GameObject> getObjectListInRadius() {
+    //     return;
+    // }
+
+
 
 }
