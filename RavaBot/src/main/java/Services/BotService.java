@@ -4,7 +4,7 @@ import Enums.*;
 import Models.*;
 
 import java.util.*;
-import java.util.stream.*;
+// import java.util.stream.*;
 
 public class BotService {
     private GameObject bot;
@@ -100,11 +100,11 @@ public class BotService {
         } else if (object.getGameObjectType() == ObjectTypes.PLAYER) {
             // ENEMY TYPE
             // V(s) = w1 * Size + w2 * Speed
-            if (gameObjectType.getSize() >= this.bot.getSize()) {
+            if (object.getSize() >= this.bot.getSize()) {
                 object.score += -object.getSize() - 0.25 * object.getSpeed();
-            } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 10) {
+            } else if (Math.abs(this.bot.getSize() - object.getSize()) <= 10) {
                 object.score += 0.35 * object.getSize() + 0.35 * object.getSpeed();
-            } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 25) {
+            } else if (Math.abs(this.bot.getSize() - object.getSize()) <= 25) {
                 object.score += 0.75 * object.getSize() + 0.65 * object.getSpeed();
             } else {
                 object.score += 0.65 * object.getSize() + 0.65 * object.getSpeed();
@@ -131,7 +131,7 @@ public class BotService {
         } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
             // TRAVERSAL TYPE
             // V(s) = 0.2 * objectSize for bigger wormhole; 0 for smaller
-            if (gameObjectType.getSize() >= this.bot.getSize()) {
+            if (object.getSize() >= this.bot.getSize()) {
                 object.score += 0.2 * object.getSize();
             }
             object.score /= getDistanceBetween(this.bot, object);
@@ -140,8 +140,8 @@ public class BotService {
 
     private void scale(ArrayList<GameObject> objects, double weight) {
         // Min max scaler with weight multiplier
-        double max = objects[0].score;
-        double min = objects[0].score;
+        double max = objects.get(0).score;
+        double min = objects.get(0).score;
 
         for (GameObject object: objects) {
             if (object.score > max) {
@@ -170,8 +170,8 @@ public class BotService {
         ArrayList<GameObject> type3 = new ArrayList<>();
         ArrayList<GameObject> type4 = new ArrayList<>();
 
-        for (GameObject gameObject : gameState.gameObjects) {
-            this.scoreObject(gameObject);
+        for (GameObject object : gameState.gameObjects) {
+            this.scoreObject(object);
             if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
                 // RESOURCE TYPE
                 type0.add(object);
@@ -198,7 +198,7 @@ public class BotService {
         this.scale(type3, 0.65);
         this.scale(type4, 0.25);
         
-        GameObject maxScoreObject = type0[0];
+        GameObject maxScoreObject = type0.get(0);
 
         for (GameObject object: type0) {
             if (object.score > maxScoreObject.score) {

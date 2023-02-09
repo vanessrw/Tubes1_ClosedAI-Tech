@@ -21,7 +21,7 @@ public class GameState {
     }
 
     public World getWorld() {
-        return this.world;
+        return world;
     }
 
     public void setWorld(World world) {
@@ -29,7 +29,7 @@ public class GameState {
     }
 
     public List<GameObject> getGameObjects() {
-        return this.gameObjects;
+        return gameObjects;
     }
 
     public void setGameObjects(List<GameObject> gameObjects) {
@@ -37,7 +37,7 @@ public class GameState {
     }
 
     public List<GameObject> getPlayerGameObjects() {
-        return this.playerGameObjects;
+        return playerGameObjects;
     }
 
     public void setPlayerGameObjects(List<GameObject> playerGameObjects) {
