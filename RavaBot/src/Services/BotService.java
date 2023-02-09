@@ -37,13 +37,15 @@ public class BotService {
         playerAction.heading = new Random().nextInt(360);
 
         if (!gameState.getGameObjects().isEmpty()) {
-            var foodList = gameState.getGameObjects()
-                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.FOOD)
-                    .sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
-                    .collect(Collectors.toList());
+            // var foodList = gameState.getGameObjects()
+            //         .stream().filter(item -> item.getGameObjectType() == ObjectTypes.FOOD)
+            //         .sorted(Comparator
+            //                 .comparing(item -> getDistanceBetween(bot, item)))
+            //         .collect(Collectors.toList());
 
-            playerAction.heading = getHeadingBetween(foodList.get(0));
+            // playerAction.heading = getHeadingBetween(foodList.get(0));
+
+            playerAction.heading = getHeadingBetween(this.getMaxScoreObject());
         }
 
         this.playerAction = playerAction;
