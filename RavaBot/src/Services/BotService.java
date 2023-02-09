@@ -79,96 +79,151 @@ public class BotService {
         return (int) (v * (180 / Math.PI));
     }
 
-    private double getTypeFactor(GameObject gameObjectType) {
-        if (gameObjectType.getGameObjectType() == ObjectTypes.PLAYER) {
+    // Scoring methods
+    private void scoreObject(GameObject object) {
+
+        object.score = 0.0;
+
+        if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+            // RESOURCE TYPE
+            // V(s) = Size + Effects
+            // Food Effects = 0; Superfood Effects = 5; Supernova Pickup = 10. 
+            object.score += object.getSize();
+            if (object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+                object.score += 5;
+            } else if (object.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP){
+                object.score += 10;
+            }
+            object.score /= getDistanceBetween(this.bot, object);
+        } else if (object.getGameObjectType() == ObjectTypes.PLAYER) {
+            // ENEMY TYPE
+            // V(s) = w1 * Size + w2 * Speed
             if (gameObjectType.getSize() >= this.bot.getSize()) {
-                return -1.0;
+                object.score += -object.getSize() - 0.25 * object.getSpeed();
             } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 10) {
-                return 0.25;
+                object.score += 0.35 * object.getSize() + 0.35 * object.getSpeed();
             } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 25) {
-                return 0.75;
+                object.score += 0.75 * object.getSize() + 0.65 * object.getSpeed();
             } else {
-                return 0.85;
+                object.score += 0.65 * object.getSize() + 0.65 * object.getSpeed();
             }
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERFOOD) {
-            return 0.825;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.FOOD) {
-            return 0.8;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP) {
-            return 0.6;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.TELEPORTER) {
-            return 0.4;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.WORMHOLE) {
-            return 0.25;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
-            return -0.5;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.GASCLOUD) {
-            return -0.7;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.TORPEDOSALVO) {
-            return -0.85;
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
-            return -0.9;
-        }
-    }
-
-    // w1 = size factor weight
-    // w2 = speed factor weight
-    private double[] getWeights(GameObject gameObjectType) {
-        if (gameObjectType.getGameObjectType() == ObjectTypes.PLAYER) {
+            object.score /= getDistanceBetween(this.bot, object);
+        } else if (object.getGameObjectType() == ObjectTypes.GASCLOUD || object.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
+            // OBSTACLE TYPE
+            // V(s) = Effects
+            if (this.bot.getSize() <= 15) {
+                object.score -= object.getSize();
+            } else if (this.bot.getSize() <= 30) {
+                object.score -= 0.85 * object.getSize();
+            } else {
+                object.score -= 0.75 * object.getSize();
+            }
+            object.score /= getDistanceBetween(this.bot, object);
+        } else if (object.getGameObjectType() == ObjectTypes.TORPEDOSALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+            // ENEMY WEAPONS TYPE
+            object.score -= 10;
+            if (object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+                object.score -= 30;
+            }
+            object.score /= getDistanceBetween(this.bot, object);
+        } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
+            // TRAVERSAL TYPE
+            // V(s) = 0.2 * objectSize for bigger wormhole; 0 for smaller
             if (gameObjectType.getSize() >= this.bot.getSize()) {
-                return new double[]{0.95, 0.9};
-            } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 10) {
-                return new double[]{0.35, 0.35};
-            } else if (Math.abs(this.bot.getSize() - gameObjectType.getSize()) <= 20) {
-                return new double[]{0.75, 0.65};
-            } else {
-                return new double[]{0.85, 0.85};
+                object.score += 0.2 * object.getSize();
             }
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERFOOD) {
-            return new double[]{0.95, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.FOOD) {
-            return new double[]{0.9, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP) {
-            return new double[]{0.85, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.TELEPORTER) {
-            return new double[]{0.65, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.WORMHOLE) {
-            return new double[]{0.60, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
-            return new double[]{0.75, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.GASCLOUD) {
-            return new double[]{0.85, 0.0};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.TORPEDOSALVO) {
-            return new double[]{0.9, 0.9};
-        } else if (gameObjectType.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
-            return new double[]{0.95, 0.0};
+            object.score /= getDistanceBetween(this.bot, object);
         }
     }
 
-    private double scoreObject(GameObject object) {
-        // V(s) = a (w1x1 + w2x2) 
-        // x1 = size factor
-        // x2 = speed factor
-        // a = type factor
+    private void scale(ArrayList<GameObject> objects, double weight) {
+        // Min max scaler with weight multiplier
+        double max = objects[0].score;
+        double min = objects[0].score;
 
-        double[] features = new double[] {
-            object.getSize(),
-            object.getSpeed(),
-            this.getTypeFactor(object)
-        };
-
-        double[] weights = getWeights(object);
-
-        return (features[2] * (weights[0]*features[0] + weights[1]*features[1]));
+        for (GameObject object: objects) {
+            if (object.score > max) {
+                max = object.score;
+            } else if (object.score < min) {
+                min = object.score;
+            }
+        }
+        double range = max - min;
+    
+        for (GameObject object : objects) {
+          object.score = ((object.score - min) / range) * weight;
+        }
     }
 
-    private List<GameObject> getObjectsInRadius(int x, int y, int radius) {
-        List<GameObject> result = new ArrayList<>();
+    private GameObject getMaxScoreObject() {
+        // Type 0: Resource
+        // Type 1: Enemy bot
+        // Type 2: Obstacle
+        // Type 3: Weapons
+        // Type 4: Traversal
+
+        ArrayList<GameObject> type0 = new ArrayList<>();
+        ArrayList<GameObject> type1 = new ArrayList<>();
+        ArrayList<GameObject> type2 = new ArrayList<>();
+        ArrayList<GameObject> type3 = new ArrayList<>();
+        ArrayList<GameObject> type4 = new ArrayList<>();
 
         for (GameObject gameObject : gameState.gameObjects) {
-            if (Math.min(getDistanceBetween(this.bot, gameObject), this.gameState.getWorld().getRadius()) <= radius) {
-                result.add(gameObject);
+            this.scoreObject(gameObject);
+            if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+                // RESOURCE TYPE
+                type0.add(object);
+            } else if (object.getGameObjectType() == ObjectTypes.PLAYER) {
+                // ENEMY TYPE
+                type1.add(object);
+            } else if (object.getGameObjectType() == ObjectTypes.GASCLOUD || object.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
+                // OBSTACLE TYPE
+                type2.add(object);
+            } else if (object.getGameObjectType() == ObjectTypes.TORPEDOSALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+                // ENEMY WEAPONS TYPE
+                type3.add(object);
+            } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
+                // TRAVERSAL TYPE
+                type4.add(object);
+            } else {
+                continue;
             }
         }
+
+        this.scale(type0, 1.0);
+        this.scale(type1, 0.9);
+        this.scale(type2, 0.75);
+        this.scale(type3, 0.65);
+        this.scale(type4, 0.25);
+        
+        GameObject maxScoreObject = type0[0];
+
+        for (GameObject object: type0) {
+            if (object.score > maxScoreObject.score) {
+                maxScoreObject = object;
+            }
+        }
+        for (GameObject object: type1) {
+            if (object.score > maxScoreObject.score) {
+                maxScoreObject = object;
+            }
+        }
+        for (GameObject object: type2) {
+            if (object.score > maxScoreObject.score) {
+                maxScoreObject = object;
+            }
+        }
+        for (GameObject object: type3) {
+            if (object.score > maxScoreObject.score) {
+                maxScoreObject = object;
+            }
+        }
+        for (GameObject object: type4) {
+            if (object.score > maxScoreObject.score) {
+                maxScoreObject = object;
+            }
+        }
+
+        return maxScoreObject;
     }
 }

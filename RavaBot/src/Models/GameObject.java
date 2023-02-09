@@ -15,6 +15,7 @@ public class GameObject {
   public Integer SupernovaAvailable;
   public Integer TeleportCount;
   public Integer ShieldCount;
+  public Double score;
 
   public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
   Position position, ObjectTypes gameObjectType, Integer effect, Integer torpedo_count,
@@ -30,6 +31,7 @@ public class GameObject {
     this.SupernovaAvailable = supernova_avail;
     this.TeleportCount = teleport_count;
     this.ShieldCount = shield_count;
+    this.score = 0.0;
   }
 
   public UUID getId() {
