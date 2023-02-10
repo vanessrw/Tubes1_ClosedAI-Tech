@@ -86,14 +86,14 @@ public class BotService {
 
         object.score = 0.0;
 
-        if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+        if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPER_FOOD) {
             // RESOURCE TYPE
             // V(s) = Size + Effects
             // Food Effects = 0; Superfood Effects = 5; Supernova Pickup = 10. 
             object.score += object.getSize();
-            if (object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+            if (object.getGameObjectType() == ObjectTypes.SUPER_FOOD) {
                 object.score += 5;
-            } else if (object.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP){
+            } else if (object.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP){
                 object.score += 10;
             }
             object.score /= getDistanceBetween(this.bot, object);
@@ -110,7 +110,7 @@ public class BotService {
                 object.score += 0.65 * object.getSize() + 0.65 * object.getSpeed();
             }
             object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.GASCLOUD || object.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
+        } else if (object.getGameObjectType() == ObjectTypes.GAS_CLOUD || object.getGameObjectType() == ObjectTypes.ASTEROID_FIELD) {
             // OBSTACLE TYPE
             // V(s) = Effects
             if (this.bot.getSize() <= 15) {
@@ -121,10 +121,10 @@ public class BotService {
                 object.score -= 0.75 * object.getSize();
             }
             object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.TORPEDOSALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+        } else if (object.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
             // ENEMY WEAPONS TYPE
             object.score -= 10;
-            if (object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+            if (object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
                 object.score -= 30;
             }
             object.score /= getDistanceBetween(this.bot, object);
@@ -172,16 +172,16 @@ public class BotService {
 
         for (GameObject object : gameState.gameObjects) {
             this.scoreObject(object);
-            if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
+            if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPER_FOOD || object.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP) {
                 // RESOURCE TYPE
                 type0.add(object);
             } else if (object.getGameObjectType() == ObjectTypes.PLAYER) {
                 // ENEMY TYPE
                 type1.add(object);
-            } else if (object.getGameObjectType() == ObjectTypes.GASCLOUD || object.getGameObjectType() == ObjectTypes.ASTEROIDFIELD) {
+            } else if (object.getGameObjectType() == ObjectTypes.GAS_CLOUD || object.getGameObjectType() == ObjectTypes.ASTEROID_FIELD) {
                 // OBSTACLE TYPE
                 type2.add(object);
-            } else if (object.getGameObjectType() == ObjectTypes.TORPEDOSALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVABOMB) {
+            } else if (object.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
                 // ENEMY WEAPONS TYPE
                 type3.add(object);
             } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
@@ -190,6 +190,7 @@ public class BotService {
             } else {
                 continue;
             }
+            System.out.println(object.score);
         }
 
         this.scale(type0, 1.0);
