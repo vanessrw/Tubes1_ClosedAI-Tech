@@ -38,14 +38,15 @@ public class BotService {
         playerAction.heading = new Random().nextInt(360);
 
         // Weight parameters
-        double w0 = 1.5;
-        double w1 = 0.9;
-        double w2 = 0.65;
-        double w3 = 0.45;
-        double w4 = 0.25;
+        double w0 = 1.0;
+        double w1 = 0.0;
+        double w2 = 0.0;
+        double w3 = 0.0;
+        double w4 = 0.0;
 
         if (!gameState.getGameObjects().isEmpty()) {
             ArrayList<GameObject> nearestObjects = nearestObjectsScored();
+            writeScoresToFile(nearestObjects);
             playerAction.heading = getHeadingBetween(this.getMaxScoreObject(nearestObjects, w0, w1, w2, w3, w4));
         }
 
@@ -86,20 +87,24 @@ public class BotService {
         try {
             FileWriter fileWriter = new FileWriter("scores.txt", true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            bufferedWriter.write("Tick: ");
+            bufferedWriter.write(String.valueOf(gameState.world.getCurrentTick()));
+            bufferedWriter.newLine();
             bufferedWriter.write("Nearest enemy: ");
-            bufferedWriter.write(String.valueOf(objectList.get(0).id));
+            bufferedWriter.write(String.valueOf(objectList.get(0).score));
             bufferedWriter.newLine();
             bufferedWriter.write("Nearest consumables: ");
-            bufferedWriter.write(String.valueOf(objectList.get(1).id));
+            bufferedWriter.write(String.valueOf(objectList.get(1).score));
             bufferedWriter.newLine();
             bufferedWriter.write("Nearest obstacle: ");
-            bufferedWriter.write(String.valueOf(objectList.get(2).id));
+            bufferedWriter.write(String.valueOf(objectList.get(2).score));
             bufferedWriter.newLine();
             bufferedWriter.write("Nearest weapons: ");
-            bufferedWriter.write(String.valueOf(objectList.get(3).id));
+            bufferedWriter.write(String.valueOf(objectList.get(3).score));
             bufferedWriter.newLine();
             bufferedWriter.write("Nearest traversal: ");
-            bufferedWriter.write(String.valueOf(objectList.get(4).id));
+            bufferedWriter.write(String.valueOf(objectList.get(4).score));
             bufferedWriter.newLine();
             bufferedWriter.newLine();
             bufferedWriter.close();
@@ -248,8 +253,6 @@ public class BotService {
                 maxScoreObject = object;
             }
         }
-
-        writeScoresToFile(nearestObjects);
 
         return maxScoreObject;
     }
