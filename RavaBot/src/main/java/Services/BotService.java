@@ -68,6 +68,7 @@ public class BotService {
 
                 System.out.println("Nom nom");
             }
+            this.playerAction.action = calculateOtherActions();
         }
 
         this.playerAction = playerAction;
@@ -308,7 +309,56 @@ public class BotService {
             object.score /= getDistanceBetween(this.bot, object);
         }
     }
+    private void startAfterBurner(){
+        if (this.bot.getSize() > 50){
+            playerAction.action = PlayerActions.STARTAFTERBURNER;
+        }
+    }
 
+    private void stopAfterBurner(){
+        playerAction.action = PlayerActions.STOPAFTERBURNER;
+    }
+
+    private void fireTorpedo(){
+        playerAction.action = PlayerAction.FIRETORPEDOS;
+    }
+
+    private PlayerAction calculateOtherActions(gameState, getRadius()){
+        PlayerAction otherActions;
+        for (GameObject object: objects){
+            GameObject nearestEnemy = getNearestObjects("ENEMY").get(0);
+            // AFTERBURNER
+            if (object.position <= getRadius()){
+                
+                // AFTERBURNER
+                if ((getDistanceBetween(this.bot, nearestEnemy) <= this.bot.size*0.3) and (this.bot.getSpeed() <= 10) ){
+                    startAfterBurner();
+                }
+                ///else if ((getDistanceBetween(bot)))
+                
+                // TORPEDO
+                else if (getDistanceBetween(this.bot, nearestEnemy) <= (this.bot.size)*1.2) and 
+                (getDistanceBetween(bot,enemy) > (this.bot.size)*0.75) and (enemy.getSize() < this.bot.size)
+                and (enemy.getSize() >= (this.bot.size)*0.5) ){
+                    fireTorpedo();
+                }
+            }
+
+        //SHIELD
+        // calculateTorpedoTrajectory(Position enemyBot)
+        // baru sambungin active shield klo misal torpedonya deket
+
+        //SUPERNOVA
+        //prioritize picking up supernova
+        //firesupernova
+
+        //TELEPORT
+        // if nearest enemy.size > this->size{
+            // check musuh 1 map, teleport ke yg < kita tp plg gede   
+        //}
+        //}
+        return otherActions;
+    }
     // private ArrayList<GameObject> nearestObjectsScored() {
     //     ArrayList<GameObject> near = getNearestObjects();
 
