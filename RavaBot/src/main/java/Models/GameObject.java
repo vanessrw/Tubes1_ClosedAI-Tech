@@ -18,18 +18,18 @@ public class GameObject {
   public Double score;
 
   public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
-  Position position, ObjectTypes gameObjectType) {
+  Position position, ObjectTypes gameObjectType, Integer effect, Integer torpedo_count, Integer supernova_avail, Integer teleport_count, Integer shield_count) {
     this.id = id;
     this.size = size;
     this.speed = speed;
     this.currentHeading = currentHeading;
     this.position = position;
     this.gameObjectType = gameObjectType;
-    // this.effects = effect;
-    // this.TorpedoSalvoCount = torpedo_count;
-    // this.SupernovaAvailable = supernova_avail;
-    // this.TeleportCount = teleport_count;
-    // this.ShieldCount = shield_count;
+    this.effects = effect;
+    this.TorpedoSalvoCount = torpedo_count;
+    this.SupernovaAvailable = supernova_avail;
+    this.TeleportCount = teleport_count;
+    this.ShieldCount = shield_count;
     this.score = 0.0;
   }
 
@@ -76,7 +76,12 @@ public class GameObject {
   public static GameObject FromStateList(UUID id, List<Integer> stateList)
   {
     Position position = new Position(stateList.get(4), stateList.get(5));
-    return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)));
+    Integer listSize = stateList.size();
+    if(listSize == 11) {
+      return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)), stateList.get(6), stateList.get(7), stateList.get(8), stateList.get(9), stateList.get(10));
+    } else {
+      return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)), 0, 0, 0, 0, 0);
+    }
   }
   
   // public int getTorpedoCount(){

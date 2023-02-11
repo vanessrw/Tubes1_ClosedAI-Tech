@@ -34,8 +34,8 @@ public class BotService {
     }
 
     public void computeNextPlayerAction(PlayerAction playerAction) {
-        playerAction.action = PlayerActions.FORWARD;
-        playerAction.heading = new Random().nextInt(360);
+        // playerAction.action = PlayerActions.FORWARD;
+        // playerAction.heading = new Random().nextInt(360);
 
         // Weight parameters
         double w0 = 1.0;
@@ -46,8 +46,17 @@ public class BotService {
 
         if (!gameState.getGameObjects().isEmpty()) {
             ArrayList<GameObject> nearestObjects = nearestObjectsScored();
-            writeScoresToFile(nearestObjects);
-            playerAction.heading = getHeadingBetween(this.getMaxScoreObject(nearestObjects, w0, w1, w2, w3, w4));
+            if(gameState.world.getCurrentTick() == 56) {
+              writeToFile(bot);
+            }
+            if(gameState.world.getCurrentTick() == 50) {
+              playerAction.action = PlayerActions.FIRETORPEDOES;
+              playerAction.heading = 0;
+            } else {
+              playerAction.action = PlayerActions.FORWARD;
+              playerAction.heading = getHeadingBetween(this.getMaxScoreObject(nearestObjects, w0, w1, w2, w3, w4));
+            }
+
         }
 
         this.playerAction = playerAction;
@@ -81,6 +90,17 @@ public class BotService {
 
     private int toDegrees(double v) {
         return (int) (v * (180 / Math.PI));
+    }
+
+    public void writeToFile(GameObject obj) {
+      try {
+        FileWriter fileWriter = new FileWriter("test.txt", true);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write(String.valueOf(obj.TorpedoSalvoCount));
+        bufferedWriter.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+    }
     }
 
     public void writeScoresToFile(ArrayList<GameObject> objectList) {
