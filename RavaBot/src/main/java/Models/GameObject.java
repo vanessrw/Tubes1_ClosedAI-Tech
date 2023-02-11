@@ -15,7 +15,6 @@ public class GameObject {
   public Integer SupernovaAvailable;
   public Integer TeleportCount;
   public Integer ShieldCount;
-  public Double score;
 
   public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
   Position position, ObjectTypes gameObjectType) {
@@ -30,7 +29,6 @@ public class GameObject {
     // this.SupernovaAvailable = supernova_avail;
     // this.TeleportCount = teleport_count;
     // this.ShieldCount = shield_count;
-    this.score = 0.0;
   }
 
   public UUID getId() {
@@ -104,7 +102,6 @@ public class GameObject {
   //   return this.effects;
   // }
 
-  // 5 statelist trakhir blm lengkap
   // public static GameObject FromStateList(UUID id, List<Integer> stateList)
   // {
   //   Position position = new Position(stateList.get(4), stateList.get(5));
@@ -128,5 +125,7 @@ public class GameObject {
   //   return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)),
   //   stateList.get(7), stateList(6), stateList(8), stateList(10), stateList(9));
   // }
+
+  
 }
 
