@@ -328,7 +328,7 @@ public class BotService {
         for (GameObject object: objects){
             GameObject nearestEnemy = getNearestObjects("ENEMY").get(0);
             // AFTERBURNER
-            if (object.position <= getRadius()){
+            if (object.position <= getRadiusKita()){
                 
                 // AFTERBURNER
                 if ((getDistanceBetween(this.bot, nearestEnemy) <= this.bot.size*0.3) and (this.bot.getSpeed() <= 10) ){
