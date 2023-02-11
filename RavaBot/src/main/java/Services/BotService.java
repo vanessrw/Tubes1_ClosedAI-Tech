@@ -34,10 +34,10 @@ public class BotService {
     }
 
     public void computeNextPlayerAction(PlayerAction playerAction) {
-        ArrayList<Double> weights = new ArrayList<>(Arrays.asList(1.23, 2.0, 1.0, 1.0));
+        ArrayList<Double> weights = new ArrayList<>(Arrays.asList(1.25, 1.5, 1.0, 1.0));
 
         playerAction.action = PlayerActions.FORWARD;
-        playerAction.heading = getOptimalHeading(weights, 400, 8, 250);
+        playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
 
         this.playerAction = playerAction;
     }
@@ -106,47 +106,49 @@ public class BotService {
         }
     }
 
-    // Bot logic methods
+    //                          Bot logic methods
+    // =====================================================================
+    // =====================================================================
     private List<GameObject> getNearestObjects(List<GameObject> objectList, String category) {
         var filteredList = objectList;
         if (category == "ENEMY") {
             filteredList = objectList
                         .stream().filter(item -> item.getGameObjectType() == ObjectTypes.PLAYER && item.getId() != this.bot.getId())
                         .sorted(Comparator
-                                .comparing(item -> getDistanceBetween(bot, item)))
+                                .comparing(item -> getActualDistance(bot, item)))
                         .collect(Collectors.toList());
 
         } else if (category == "CONSUMABLES") {
             filteredList = objectList
                     .stream().filter(item -> item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP)
                     .sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
+                            .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
 
         } else if (category == "OBSTACLES") {
             filteredList = objectList
                     .stream().filter(item -> item.getGameObjectType() == ObjectTypes.GAS_CLOUD || item.getGameObjectType() == ObjectTypes.ASTEROID_FIELD)
                     .sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
+                            .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
 
         } else if (category == "WEAPONS") {
             filteredList = objectList
                     .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || item.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB)
                     .sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
+                            .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
 
         } else if (category == "TRAVERSAL") {
             filteredList = objectList
                     .stream().filter(item -> item.getGameObjectType() == ObjectTypes.WORMHOLE)
                     .sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
+                            .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
         } else {
             filteredList = objectList
                     .stream().sorted(Comparator
-                            .comparing(item -> getDistanceBetween(bot, item)))
+                            .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
         }
 
@@ -201,7 +203,7 @@ public class BotService {
     }
 
     private List<GameObject> filterObjectListByHeading(List<GameObject> objects, double minDegree, double maxDegree, int radius){
-        return objects.stream().filter(item -> getDistanceBetween(this.bot, item) <= radius && (getHeadingBetween(item) >= maxDegree || getHeadingBetween(item) <= minDegree)).collect(Collectors.toList());
+        return objects.stream().filter(item -> getActualDistance(this.bot, item) <= radius && (getHeadingBetween(item) >= maxDegree || getHeadingBetween(item) <= minDegree)).collect(Collectors.toList());
     }
 
     private double getTotalObjectScore(List<GameObject> objects, double w0, double w1, double w2, double w3) {
@@ -214,19 +216,19 @@ public class BotService {
             if (item.getGameObjectType() == ObjectTypes.FOOD && item.getId() != this.bot.getId()) {
                 // ENEMY TYPE
                 if (item.getSize() >= this.bot.getSize()) {
-                    enemyScore += item.getSize()/getActualDistance(this.bot, item);
+                    enemyScore += item.getSize();
                 } else {
-                    enemyScore -= item.getSize()/getActualDistance(this.bot, item);
+                    enemyScore -= item.getSize();
                 }
             } else if (item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP) {
                 // CONSUMABLE TYPE
-                consumableScore += item.getSize()/getActualDistance(this.bot, item);
+                consumableScore += item.getSize();
             } else if (item.getGameObjectType() == ObjectTypes.GAS_CLOUD || item.getGameObjectType() == ObjectTypes.ASTEROID_FIELD) {
                 // OBSTACLE TYPE
-                obstacleScore -= item.getSize()/getActualDistance(this.bot, item);
+                obstacleScore -= item.getSize();
             } else if (item.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || item.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
                 // WEAPONS TYPE
-                weaponScore -= item.getSize()/getActualDistance(this.bot, item);
+                weaponScore -= item.getSize();
             } else {
                 continue;
             }
@@ -285,7 +287,7 @@ public class BotService {
         // Calculate best heading for the selected section
         if (!allObjects.isEmpty()) {
             // Consumables
-            List <GameObject> nearestConsumablesList = getNearestObjects(bestSection, "CONSUMABLES").stream().filter(item -> getDistanceToNearestBorder(item) > 0.9 * this.bot.getSize()).collect(Collectors.toList());
+            List <GameObject> nearestConsumablesList = getNearestObjects(bestSection, "CONSUMABLES").stream().filter(item -> getDistanceToNearestBorder(item) > (0.9 * this.bot.getSize())).collect(Collectors.toList());
             GameObject nearestConsumable = nearestConsumablesList.get(0);
 
             // Enemy bots
@@ -296,7 +298,7 @@ public class BotService {
             // Consider nearest enemies
             if (distanceToEnemy < toll) {
                 if (nearestEnemy.getSize() >= this.bot.getSize()) {
-                    bestHeading = avoidThreatHeading(bestSection, nearestEnemy, 30, 30);
+                    bestHeading = avoidThreatHeading(bestSection, nearestEnemy, 45, 45);
                     System.out.println(String.valueOf(distanceToEnemy));
                 } else if (Math.abs(nearestEnemy.getSize() - this.bot.getSize()) > 10.0) {
                     bestHeading = getHeadingBetween(nearestEnemy);
