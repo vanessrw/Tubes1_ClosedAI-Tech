@@ -34,10 +34,31 @@ public class BotService {
     }
 
     public void computeNextPlayerAction(PlayerAction playerAction) {
-        ArrayList<Double> weights = new ArrayList<>(Arrays.asList(1.25, 1.5, 1.0, 1.0));
+        if (!gameState.getGameObjects().isEmpty() && !gameState.getPlayerGameObjects().isEmpty()) {
+            ArrayList<Double> weights = new ArrayList<>(Arrays.asList(1.25, 1.5, 1.0, 1.0));
+            List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
+            
+            if (!nearestEnemies.isEmpty() && 
+                    (   (this.bot.getSize() >= nearestEnemies.get(0).getSize() && getActualDistance(this.bot, nearestEnemies.get(0)) <= 100) ||
+                        (Math.abs(this.bot.getSize() - nearestEnemies.get(0).getSize()) <= 75 && getActualDistance(this.bot, nearestEnemies.get(0)) <= 250) ||
+                        (Math.abs(this.bot.getSize() - nearestEnemies.get(0).getSize()) <= 45 && getActualDistance(this.bot, nearestEnemies.get(0)) <= 225 && getActualDistance(this.bot, nearestEnemies.get(0)) >= 100) ||
+                        (Math.abs(this.bot.getSize() - nearestEnemies.get(0).getSize()) <= 35 && getActualDistance(this.bot, nearestEnemies.get(0)) < 100 && getActualDistance(this.bot, nearestEnemies.get(0)) >= 75) ||
+                        (this.bot.getSize() > 50 && getActualDistance(this.bot, nearestEnemies.get(0)) <= 70)
+                    ) && 
+                    getDistanceToNearestBorder(this.bot) > 0.75 * this.bot.getSize() &&
+                    this.bot.TorpedoSalvoCount > 0) {
+                playerAction.action = PlayerActions.FIRETORPEDOES;
+                playerAction.heading = getHeadingBetween(nearestEnemies.get(0));
+                System.out.println("Pew pew pew");
+            } else {
+                playerAction.action = PlayerActions.FORWARD;
+                playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
+            }
+        } else {
+            playerAction.action = PlayerActions.FORWARD;
+            playerAction.heading = new Random().nextInt(360);
+        }
 
-        playerAction.action = PlayerActions.FORWARD;
-        playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
 
         this.playerAction = playerAction;
     }
@@ -110,6 +131,10 @@ public class BotService {
     // =====================================================================
     // =====================================================================
     private List<GameObject> getNearestObjects(List<GameObject> objectList, String category) {
+        if (objectList.isEmpty()) {
+            return objectList;
+        }
+
         var filteredList = objectList;
         if (category == "ENEMY") {
             filteredList = objectList
@@ -282,33 +307,33 @@ public class BotService {
         List<GameObject> allObjects = this.getGameState().getPlayerGameObjects();
         allObjects.addAll(this.getGameState().getGameObjects());
 
-        // Segregate object list and score by heading sections
-        List<GameObject> bestSection = getHighestScoreSection(allObjects, weights, n_section, radius);
-        // Calculate best heading for the selected section
         if (!allObjects.isEmpty()) {
+            // Segregate object list and score by heading sections
+            List<GameObject> bestSection = getHighestScoreSection(allObjects, weights, n_section, radius);
+            
             // Consumables
             List <GameObject> nearestConsumablesList = getNearestObjects(bestSection, "CONSUMABLES").stream().filter(item -> getDistanceToNearestBorder(item) > (0.9 * this.bot.getSize())).collect(Collectors.toList());
-            GameObject nearestConsumable = nearestConsumablesList.get(0);
-
+            
             // Enemy bots
             List <GameObject> nearestEnemiesList = getNearestObjects(this.gameState.getPlayerGameObjects(), "ENEMY");
-            GameObject nearestEnemy = nearestEnemiesList.get(0);
-            double distanceToEnemy = getActualDistance(this.bot, nearestEnemy) - 0.5 * this.bot.getSize() - 0.5 * nearestEnemy.getSize();
             
             // Consider nearest enemies
-            if (distanceToEnemy < toll) {
+            if (!nearestEnemiesList.isEmpty() && getActualDistance(this.bot, nearestEnemiesList.get(0)) < toll) {
+                GameObject nearestEnemy = nearestEnemiesList.get(0);
                 if (nearestEnemy.getSize() >= this.bot.getSize()) {
                     bestHeading = avoidThreatHeading(bestSection, nearestEnemy, 45, 45);
-                    System.out.println(String.valueOf(distanceToEnemy));
+                    System.out.println(String.valueOf(getActualDistance(this.bot, nearestEnemiesList.get(0))));
                 } else if (Math.abs(nearestEnemy.getSize() - this.bot.getSize()) > 10.0) {
                     bestHeading = getHeadingBetween(nearestEnemy);
                     System.out.println("Kejar bot nih");
                 } else {
+                    GameObject nearestConsumable = nearestConsumablesList.get(0);
                     bestHeading = getHeadingBetween(nearestConsumable);
-                    System.out.println("Farming dulu deh.." + String.valueOf(distanceToEnemy));
+                    System.out.println("Farming dulu deh.." + String.valueOf(getActualDistance(this.bot, nearestEnemiesList.get(0))));
                 }
-            // Consider nearest consumables
+                // Consider nearest consumables
             } else if (!nearestConsumablesList.isEmpty()) {
+                GameObject nearestConsumable = nearestConsumablesList.get(0);
                 bestHeading = getHeadingBetween(nearestConsumable);
                 System.out.println("Nom nom");
             // No object of concern
@@ -318,8 +343,11 @@ public class BotService {
                                 0 - bot.getPosition().x));
                 System.out.println("void..");
             }
+            return bestHeading;
+        } else {
+            System.out.println("I'm straight");
+            return this.bot.currentHeading;
         }
 
-        return bestHeading;
     }
 }
