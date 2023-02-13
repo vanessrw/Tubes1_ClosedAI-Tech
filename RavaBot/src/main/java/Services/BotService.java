@@ -64,7 +64,8 @@ public class BotService {
             //    System.out.println("Shield activated.");
             //}
             // AFTERBURNER
-            //if (!nearestEnemies.isEmpty() && (this.bot.getSize()> 30 )&& (nearestEnemies.get(0).getSize() > this.bot.getSize()) && (getActualDistance(this.bot, nearestEnemies.get(0)) < 7)){
+            //if (!nearestEnemies.isEmpty() && (this.bot.getSize()> 30 )&& (nearestEnemies.get(0).getSize() > this.bot.getSize()) 
+            // && (getActualDistance(this.bot, nearestEnemies.get(0)) < 7)){
             //    do {
             //        playerAction.action = PlayerActions.STARTAFTERBURNER;
             //        playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
