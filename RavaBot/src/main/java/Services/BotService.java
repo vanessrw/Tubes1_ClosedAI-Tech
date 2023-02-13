@@ -87,7 +87,7 @@ public class BotService {
     }
 
     private double getActualDistance(GameObject object1, GameObject object2) {
-        return getDistanceBetween(object1, object2) - 0.5 * Double.valueOf(object1.getSize()) - 0.5 * Double.valueOf(object2.getSize());
+        return getDistanceBetween(object1, object2) - Double.valueOf(object1.getSize()) - Double.valueOf(object2.getSize());
     }
 
     private int getHeadingBetween(GameObject otherObject) {
@@ -227,7 +227,7 @@ public class BotService {
         double triangleX = Math.abs(object.getPosition().x);
         double triangleY = Math.abs(object.getPosition().y);
         double distanceToCenter = Math.sqrt(triangleX * triangleX + triangleY * triangleY);
-        return gameState.getWorld().getRadius() - distanceToCenter - 0.5 * object.getSize();
+        return gameState.getWorld().getRadius() - distanceToCenter - object.getSize();
     }
 
     private List<GameObject> filterObjectListByHeading(List<GameObject> objects, double minDegree, double maxDegree, int radius){
@@ -315,7 +315,7 @@ public class BotService {
             List<GameObject> bestSection = getHighestScoreSection(allObjects, weights, n_section, radius);
             
             // Consumables
-            List <GameObject> nearestConsumablesList = getNearestObjects(bestSection, "CONSUMABLES").stream().filter(item -> getDistanceToNearestBorder(item) > (this.bot.getSize())).collect(Collectors.toList());
+            List <GameObject> nearestConsumablesList = getNearestObjects(bestSection, "CONSUMABLES").stream().filter(item -> getDistanceToNearestBorder(item) > (this.bot.getSize() * 0.25)).collect(Collectors.toList());
             
             // Enemy bots
             List <GameObject> nearestEnemiesList = getNearestObjects(this.gameState.getPlayerGameObjects(), "ENEMY");
