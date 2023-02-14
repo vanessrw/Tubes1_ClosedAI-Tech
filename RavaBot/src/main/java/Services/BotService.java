@@ -116,7 +116,7 @@ public class BotService {
             }
     
             // Consider enemies
-            if (nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) {
+            if ((nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) || (nearestEnemy != null && this.bot.getSize() >= 35 && getActualDistance(this.bot, nearestEnemy) <= 200)) {
                 playerAction.heading = getHeadingBetween(nearestEnemy);
                 playerAction.action = PlayerActions.FIRETORPEDOES;
                 System.out.println("Pew pew pew");
@@ -146,7 +146,7 @@ public class BotService {
 
         } else if (category == "CONSUMABLES") {
             filteredList = objectList
-                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP && getDistanceToNearestBorder(item) > this.bot.getSize() * 1.75)
+            .stream().filter(item -> (item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP) && getDistanceToNearestBorder(item) > this.bot.getSize() * 2.5 + this.bot.getSpeed() + 150)
                     .sorted(Comparator
                             .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
@@ -206,7 +206,7 @@ public class BotService {
                 double distanceToThreat = getActualDistance(this.bot, threat);
                 nearestTarget = resources.get(0);
                 double distanceToNearestTarget = getActualDistance(this.bot, nearestTarget);
-                double potentialThreatRadius = threat.getSize() + threat.getSpeed();
+                double potentialThreatRadius = threat.getSize() + threat.getSpeed() + 0.5 * this.toll;
                 
                 if (distanceToThreat > potentialThreatRadius && distanceToNearestTarget < getActualDistance(threat, nearestTarget) + potentialThreatRadius) {
                     System.out.println("Nom nom");
@@ -285,7 +285,7 @@ public class BotService {
                 System.out.println("No bolak balik..");
                 return this.bot.currentHeading;
             }
-
+            System.out.println("Nom nom");
             return getHeadingBetween(nearestConsumable);
         }
 
