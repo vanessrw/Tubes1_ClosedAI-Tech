@@ -35,7 +35,11 @@ public class Main {
             System.out.println("Registered with the runner " + id);
 
             Position position = new Position();
+<<<<<<< HEAD
             GameObject bot = new GameObject(id, 10, 20, 0, position, ObjectTypes.PLAYER, 0, 0, 0, 0, 0);
+=======
+            GameObject bot = new GameObject(id, 10, 20, 0, position, ObjectTypes.PLAYER, 0);
+>>>>>>> fio
             botService.setBot(bot);
         }, UUID.class);
 

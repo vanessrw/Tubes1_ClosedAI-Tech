@@ -2,15 +2,20 @@ package Services;
 
 import Enums.*;
 import Models.*;
-import java.io.*;
 
 import java.util.*;
-// import java.util.stream.*;
+import java.util.stream.*;
 
 public class BotService {
+    // General attributes
     private GameObject bot;
     private PlayerAction playerAction;
     private GameState gameState;
+    private GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null);
+
+    // Hyperparameters
+    // toll: Tollerance distance to nearby smaller enemies
+    private int toll = 400;
 
     public BotService() {
         this.playerAction = new PlayerAction();
@@ -30,35 +35,6 @@ public class BotService {
     }
 
     public void setPlayerAction(PlayerAction playerAction) {
-        this.playerAction = playerAction;
-    }
-
-    public void computeNextPlayerAction(PlayerAction playerAction) {
-        // playerAction.action = PlayerActions.FORWARD;
-        // playerAction.heading = new Random().nextInt(360);
-
-        // Weight parameters
-        double w0 = 1.0;
-        double w1 = 0.0;
-        double w2 = 0.0;
-        double w3 = 0.0;
-        double w4 = 0.0;
-
-        if (!gameState.getGameObjects().isEmpty()) {
-            ArrayList<GameObject> nearestObjects = nearestObjectsScored();
-            if(gameState.world.getCurrentTick() == 56) {
-              writeToFile(bot);
-            }
-            if(gameState.world.getCurrentTick() == 50) {
-              playerAction.action = PlayerActions.FIRETORPEDOES;
-              playerAction.heading = 0;
-            } else {
-              playerAction.action = PlayerActions.FORWARD;
-              playerAction.heading = getHeadingBetween(this.getMaxScoreObject(nearestObjects, w0, w1, w2, w3, w4));
-            }
-
-        }
-
         this.playerAction = playerAction;
     }
 
@@ -82,6 +58,10 @@ public class BotService {
         return Math.sqrt(triangleX * triangleX + triangleY * triangleY);
     }
 
+    private double getActualDistance(GameObject object1, GameObject object2) {
+        return getDistanceBetween(object1, object2) - Double.valueOf(object1.getSize()) - Double.valueOf(object2.getSize());
+    }
+
     private int getHeadingBetween(GameObject otherObject) {
         int direction = toDegrees(Math.atan2(otherObject.getPosition().y - bot.getPosition().y,
                 otherObject.getPosition().x - bot.getPosition().x));
@@ -92,188 +72,225 @@ public class BotService {
         return (int) (v * (180 / Math.PI));
     }
 
-    public void writeToFile(GameObject obj) {
-      try {
-        FileWriter fileWriter = new FileWriter("test.txt", true);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(String.valueOf(obj.TorpedoSalvoCount));
-        bufferedWriter.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-    }
-    }
+    //                          BOT LOGIC METHODS
+    // =====================================================================
+    // =====================================================================
 
-    public void writeScoresToFile(ArrayList<GameObject> objectList) {
-        try {
-            FileWriter fileWriter = new FileWriter("scores.txt", true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+    public void computeNextPlayerAction(PlayerAction playerAction) {
+        playerAction.action = PlayerActions.FORWARD;
+        playerAction.heading = new Random().nextInt(360);
 
-            bufferedWriter.write("Tick: ");
-            bufferedWriter.write(String.valueOf(gameState.world.getCurrentTick()));
-            bufferedWriter.newLine();
-            bufferedWriter.write("Nearest enemy: ");
-            bufferedWriter.write(String.valueOf(objectList.get(0).score));
-            bufferedWriter.newLine();
-            bufferedWriter.write("Nearest consumables: ");
-            bufferedWriter.write(String.valueOf(objectList.get(1).score));
-            bufferedWriter.newLine();
-            bufferedWriter.write("Nearest obstacle: ");
-            bufferedWriter.write(String.valueOf(objectList.get(2).score));
-            bufferedWriter.newLine();
-            bufferedWriter.write("Nearest weapons: ");
-            bufferedWriter.write(String.valueOf(objectList.get(3).score));
-            bufferedWriter.newLine();
-            bufferedWriter.write("Nearest traversal: ");
-            bufferedWriter.write(String.valueOf(objectList.get(4).score));
-            bufferedWriter.newLine();
-            bufferedWriter.newLine();
-            bufferedWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Scoring methods
-
-    private ArrayList<GameObject> getNearestObjects() {
-        GameObject minConsumable = gameState.gameObjects.get(0);
-        GameObject minPlayer = gameState.playerGameObjects.get(0);
-        GameObject minObstacle = gameState.gameObjects.get(0);
-        GameObject minEnemyWeapons = gameState.gameObjects.get(0);
-        GameObject minTraversal = gameState.gameObjects.get(0);
-
-        for (GameObject enemy: gameState.playerGameObjects) {
-            // ENEMY TYPE
-            if (getDistanceBetween(this.bot, enemy) < getDistanceBetween(this.bot, minPlayer)) {
-                minPlayer = enemy;
-            }
-        }
-
-        for (GameObject object: gameState.gameObjects) {
-            if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
-                // CONSUMABLE TYPE
-                if (getDistanceBetween(this.bot, object) < getDistanceBetween(this.bot, minConsumable)) {
-                    minPlayer = object;
-                }
-            } else if (object.getGameObjectType() == ObjectTypes.GAS_CLOUD || object.getGameObjectType() == ObjectTypes.ASTEROID_FIELD) {
-                // OBSTACLE TYPE
-                if (getDistanceBetween(this.bot, object) < getDistanceBetween(this.bot, minObstacle)) {
-                    minObstacle = object;
-                }
-            } else if (object.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
-                // ENEMY WEAPONS TYPE
-                if (getDistanceBetween(this.bot, object) < getDistanceBetween(this.bot, minEnemyWeapons)) {
-                    minEnemyWeapons = object;
-                }
-            } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
-                // TRAVERSAL TYPE
-                if (getDistanceBetween(this.bot, object) < getDistanceBetween(this.bot, minTraversal)) {
-                    minTraversal = object;
-                }
-            }
-        }
-
-        ArrayList<GameObject> result = new ArrayList<GameObject>();
-
-        result.add(minPlayer);
-        result.add(minConsumable);
-        result.add(minObstacle);
-        result.add(minEnemyWeapons);
-        result.add(minTraversal);
-
-        return result;
-    }
-
-    private void scoreObject(GameObject object) {
-
-        object.score = 0.0;
-
-        if (object.getGameObjectType() == ObjectTypes.FOOD || object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
-            // RESOURCE TYPE
-            object.score += 5.0;
-            if (object.getGameObjectType() == ObjectTypes.SUPERFOOD) {
-                object.score += 5.0;
-            } else if (object.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP){
-                object.score += 10.0;
-            }
-            object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.PLAYER) {
-            // ENEMY TYPE
-            if (object.getSize() >= this.bot.getSize()) {
-                object.score -= 20.0;
-            } else if (Math.abs(this.bot.getSize() - object.getSize()) <= 10) {
-                object.score += 2.5;
-            } else if (Math.abs(this.bot.getSize() - object.getSize()) <= 25) {
-                object.score -= 15.0;
+        if (!gameState.getPlayerGameObjects().isEmpty()) {
+            // Nearest enemy
+            List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
+            GameObject nearestEnemy;
+            if (!nearestEnemies.isEmpty()) {
+                nearestEnemy = nearestEnemies.get(0);
             } else {
-                object.score += 25.0;
-            }
-
-            if (getDistanceBetween(this.bot, object) < 10) {
-                object.score *= 2;
+                nearestEnemy = null;
             }
             
-            object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.GAS_CLOUD || object.getGameObjectType() == ObjectTypes.ASTEROID_FIELD) {
-            // OBSTACLE TYPE
-            if (this.bot.getSize() <= 15) {
-                object.score -= 10.0;
-            } else if (this.bot.getSize() <= 30) {
-                object.score -= 5.0;
+            // Check if out of bounds
+            if (getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld().getRadius()) {
+                playerAction.heading = getHeadingBetween(centerPoint);
+                System.out.println("Whoops.. to center");
+            }
+    
+            // Check if near or in an obstacle
+            List<GameObject> nearestObstacles = getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
+            GameObject nearestObstacle;
+            if (!nearestObstacles.isEmpty()) {
+                nearestObstacle = nearestObstacles.get(0);
             } else {
-                object.score -= 2.5;
+                nearestObstacle = null;
             }
-            object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
-            // ENEMY WEAPONS TYPE
-            object.score -= 10;
-            if (object.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB) {
-                object.score -= 30;
+    
+            if (nearestObstacle != null && getDistanceBetween(nearestObstacle, this.bot) < (1.75 * this.bot.getSize() + nearestObstacle.getSize())) {
+                // Get nearest consumable outside of obstacle
+                GameObject nearestObjectOutside = getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
+                                                    .stream().filter(item -> getDistanceBetween(item, nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
+                                                    .sorted(Comparator.comparing(item -> getDistanceBetween(this.bot, item)))
+                                                    .collect(Collectors.toList()).get(0);
+                playerAction.heading = getHeadingBetween(nearestObjectOutside);
+                System.out.println("Avoiding obstacles..");
             }
-            object.score /= getDistanceBetween(this.bot, object);
-        } else if (object.getGameObjectType() == ObjectTypes.WORMHOLE) {
-            // TRAVERSAL TYPE
-            if (object.getSize() >= this.bot.getSize()) {
-                object.score += 2.5;
+    
+            // Consider enemies
+            if (nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) {
+                playerAction.heading = getHeadingBetween(nearestEnemy);
+                playerAction.action = PlayerActions.FIRETORPEDOES;
+                System.out.println("Pew pew pew");
+            } else {
+            // Consider other targets
+                playerAction.heading = getOptimalHeading(this.toll);
+                playerAction.action = PlayerActions.FORWARD;
             }
-            object.score /= getDistanceBetween(this.bot, object);
+    
+            this.playerAction = playerAction;
         }
     }
 
-    private ArrayList<GameObject> nearestObjectsScored() {
-        ArrayList<GameObject> near = getNearestObjects();
 
-        for (GameObject object: near) {
-            scoreObject(object);
+    private List<GameObject> getNearestObjects(List<GameObject> objectList, String category) {
+        if (objectList.isEmpty() || objectList == null) {
+            return new ArrayList<GameObject>(10);
         }
 
-        return near;
+        var filteredList = objectList;
+        if (category == "ENEMY") {
+            filteredList = objectList
+                        .stream().filter(item -> item.getGameObjectType() == ObjectTypes.PLAYER && item.getId() != this.bot.getId())
+                        .sorted(Comparator
+                                .comparing(item -> getActualDistance(bot, item)))
+                        .collect(Collectors.toList());
+
+        } else if (category == "CONSUMABLES") {
+            filteredList = objectList
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP && getDistanceToNearestBorder(item) > this.bot.getSize() * 1.75)
+                    .sorted(Comparator
+                            .comparing(item -> getActualDistance(bot, item)))
+                    .collect(Collectors.toList());
+
+        } else if (category == "OBSTACLES") {
+            filteredList = objectList
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.GAS_CLOUD || item.getGameObjectType() == ObjectTypes.ASTEROID_FIELD)
+                    .sorted(Comparator
+                            .comparing(item -> getActualDistance(bot, item)))
+                    .collect(Collectors.toList());
+
+        } else if (category == "WEAPONS") {
+            filteredList = objectList
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || item.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB)
+                    .sorted(Comparator
+                            .comparing(item -> getActualDistance(bot, item)))
+                    .collect(Collectors.toList());
+
+        } else if (category == "TRAVERSAL") {
+            filteredList = objectList
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.WORMHOLE)
+                    .sorted(Comparator
+                            .comparing(item -> getActualDistance(bot, item)))
+                    .collect(Collectors.toList());
+        } else {
+            filteredList = objectList
+                    .stream().sorted(Comparator
+                            .comparing(item -> getActualDistance(bot, item)))
+                    .collect(Collectors.toList());
+        }
+
+        return filteredList;
     }
 
-    private GameObject getMaxScoreObject(ArrayList<GameObject> listObject, double w0, double w1, double w2, double w3, double w4) {
-        // Type 0: Enemy Bot
-        // Type 1: Resources
-        // Type 2: Obstacle
-        // Type 3: Weapons
-        // Type 4: Traversal
+    private int avoidThreatHeading(List<GameObject> objectList, GameObject threat, int minDegree, int maxDegree) {
+        if (!objectList.isEmpty()) {
+            List<GameObject> resources = objectList
+                        .stream().filter(item -> (
+                            item.getGameObjectType() == ObjectTypes.FOOD ||
+                            item.getGameObjectType() == ObjectTypes.SUPERFOOD ||
+                            item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP ||
+                            (item.getGameObjectType() == ObjectTypes.PLAYER && item.getSize() < this.bot.getSize() && Math.abs(item.getSize() - this.bot.getSize()) > 30)
+                        ))
+                        .sorted(Comparator
+                                .comparing(item -> getDistanceBetween(bot, item)))
+                        .collect(Collectors.toList());
+    
+            GameObject nearestTarget;
+    
+            if (resources.isEmpty()) {
+                // Getting away with no resource left
+                System.out.println("Running pointlessly");
+                return toDegrees(Math.atan2(threat.getPosition().getY() - this.bot.getPosition().getY(), threat.getPosition().getX() - this.bot.getPosition().getX()));
+            } else {
+                // Getting away while gathering resources 
+                // Consider distances
+                double distanceToThreat = getActualDistance(this.bot, threat);
+                nearestTarget = resources.get(0);
+                double distanceToNearestTarget = getActualDistance(this.bot, nearestTarget);
+                double potentialThreatRadius = threat.getSize() + threat.getSpeed();
+                
+                if (distanceToThreat > potentialThreatRadius && distanceToNearestTarget < getActualDistance(threat, nearestTarget) + potentialThreatRadius) {
+                    System.out.println("Nom nom");
+                    return getHeadingBetween(nearestTarget);
+                } else {
+                    List<GameObject> resourcesBehind = resources
+                                .stream().filter(item ->
+                                    getHeadingBetween(item) > (getHeadingBetween(threat) + maxDegree) % 360 ||
+                                    getHeadingBetween(item) < (getHeadingBetween(threat) - minDegree) % 360
+                                ).sorted(Comparator
+                                .comparing(item -> getDistanceBetween(bot, item)))
+                                .collect(Collectors.toList());
+                    nearestTarget = resourcesBehind.get(0);
+                    
+                    if (nearestTarget != null) {
+                        System.out.println("Runnn");
+                        return getHeadingBetween(nearestTarget);
+                    } else {
+                        System.out.println("Yolo");
+                        return getHeadingBetween(resources.get(0));
+                    }
+                }
+            }
+        } else {
+            return getHeadingBetween(centerPoint);
+        }
+    }
 
-        // Get weighted score
+    private double getDistanceToNearestBorder(GameObject object) {
+        double triangleX = Math.abs(object.getPosition().x);
+        double triangleY = Math.abs(object.getPosition().y);
+        double distanceToCenter = Math.sqrt(triangleX * triangleX + triangleY * triangleY);
+        return gameState.getWorld().getRadius() - distanceToCenter - object.getSize();
+    }
 
-        ArrayList<GameObject> nearestObjects = nearestObjectsScored();
-        
-        // nearestObjects.get(0).score *= w0;
-        // nearestObjects.get(1).score *= w1;
-        // nearestObjects.get(2).score *= w2;
-        // nearestObjects.get(3).score *= w3;
-        // nearestObjects.get(4).score *= w4;
-        
-        GameObject maxScoreObject = nearestObjects.get(0);
-        for (GameObject object: nearestObjects) {
-            if (object.score > maxScoreObject.score) {
-                maxScoreObject = object;
+    private int getOptimalHeading(int toll) {
+        // Get all objects
+        List<GameObject> allObjects = this.getGameState().getPlayerGameObjects();
+        allObjects.addAll(this.getGameState().getGameObjects());
+
+        // Get the nearest consumables
+        List<GameObject> nearestConsumables = getNearestObjects(this.gameState.getGameObjects(), "CONSUMABLES");
+        GameObject nearestConsumable;
+        if (!nearestConsumables.isEmpty()) {
+            nearestConsumable = nearestConsumables.get(0);
+        } else {
+            nearestConsumable = null;
+        }
+
+        // Get the nearest enemy
+        List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
+        GameObject nearestEnemy;
+        if (!nearestEnemies.isEmpty()) {
+            nearestEnemy = nearestEnemies.get(0);
+        } else {
+            nearestEnemy = null;
+        }
+
+        // Consider nearest enemy bot
+        if (nearestEnemy != null) {
+            // If enemy is bigger
+            if (nearestEnemy.getSize() >= this.bot.getSize()) {
+                return avoidThreatHeading(allObjects, nearestEnemy, 45, 45);
+            }
+            
+            // If enemy is significantly smaller
+            if (Math.abs(nearestEnemy.getSize() - this.bot.getSize()) > 30 && getActualDistance(this.bot, nearestEnemy) < toll) {
+                System.out.println("Kejar bot nih");
+                return getHeadingBetween(nearestEnemy);
             }
         }
 
-        return maxScoreObject;
+        // If there are no enemy of concern, consider consumables
+        if (nearestConsumable != null) {
+            if (Math.abs(getHeadingBetween(nearestConsumable) - this.bot.currentHeading) > 165) {
+                System.out.println("No bolak balik..");
+                return this.bot.currentHeading;
+            }
+
+            return getHeadingBetween(nearestConsumable);
+        }
+
+        System.out.println("Nothing of concern..");
+        return getHeadingBetween(centerPoint);
+
     }
 }
