@@ -38,7 +38,7 @@ public class BotService {
             ArrayList<Double> weights = new ArrayList<>(Arrays.asList(1.25, 1.5, 1.0, 1.0));
             List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
 
-            //List <GameObject> nearestTorpedoList = getNearestObjects(this.gameState.getPlayerGameObjects(), "WEAPONS");
+            List <GameObject> nearestTorpedoList = getNearestObjects(this.gameState.getPlayerGameObjects(), "WEAPONS");
             //GameObject nearestTorpedo = nearestTorpedoList.get(0);
 
             if (!nearestEnemies.isEmpty() && 
@@ -58,19 +58,21 @@ public class BotService {
                 System.out.println("Pew pew pew");
             } 
             // SHIELD
-            //else if (!nearestTorpedoList.isEmpty() && getActualDistance(this.bot, nearestTorpedo) < 5 && this.bot.ShieldCount > 0){
-            //    playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
-            //    playerAction.action = PlayerActions.ACTIVATE_SHIELD;
-            //    System.out.println("Shield activated.");
-            //}
+            else if (!nearestTorpedoList.isEmpty() && getActualDistance(this.bot, nearestTorpedo) < 5 && 
+            && nearestEnemies.size() == 1 && this.bot.ShieldCount > 0){
+                GameObject nearestTorpedo = nearestTorpedoList.get(0);
+                playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
+                playerAction.action = PlayerActions.ACTIVATE_SHIELD;
+                System.out.println("Shield activated.");
+            }
             // AFTERBURNER
-            //if (!nearestEnemies.isEmpty() && (this.bot.getSize()> 30 )&& (nearestEnemies.get(0).getSize() > this.bot.getSize()) 
-            // && (getActualDistance(this.bot, nearestEnemies.get(0)) < 7)){
-            //    do {
-            //        playerAction.action = PlayerActions.STARTAFTERBURNER;
-            //        playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
-            //    } while (getActualDistance(this.bot, nearestEnemies.get(0)) < 7);
-            //}            
+            if (!nearestEnemies.isEmpty() && (this.bot.getSize()> 30 )&& (nearestEnemies.get(0).getSize() > this.bot.getSize()) 
+             && (getActualDistance(this.bot, nearestEnemies.get(0)) < 7)){
+                do {
+                    playerAction.action = PlayerActions.STARTAFTERBURNER;
+                    playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
+                } while (getActualDistance(this.bot, nearestEnemies.get(0)) < 7);
+            }            
             else {
                 playerAction.action = PlayerActions.FORWARD;
                 playerAction.heading = getOptimalHeading(weights, 700, 8, 350);
@@ -339,15 +341,18 @@ public class BotService {
             List <GameObject> nearestEnemiesList = getNearestObjects(this.gameState.getPlayerGameObjects(), "ENEMY");
 
             // Incoming torpedo
-            //List <GameObject> nearestTorpedoList = getNearestObjects(this.gameState.getPlayerGameObjects(), "WEAPONS");
+            List <GameObject> nearestTorpedoList = getNearestObjects(this.gameState.getPlayerGameObjects(), "WEAPONS");
             //GameObject nearestTorpedo = nearestTorpedoList.get(0);
             //double distanceToTorpedo = getActualDistance(this.bot, nearestTorpedo) - 0.5 * this.bot.getSize();
 
             // Consider nearest incoming torpedo
-            //if (distanceToTorpedo < 5){
-            //    bestHeading = avoidThreatHeading(bestSection, nearestTorpedo, 45, 45);
-            //    System.out.println(String.valueOf(distanceToTorpedo));
-            //}
+            if (!nearestTorpedoList.isEmpty() && nearestTorpedoList.size() == 1){
+                GameObject nearestTorpedo = nearestTorpedoList.get(0);
+                double distanceToTorpedo = getActualDistance(this.bot, nearestTorpedo) - 10;
+                bestHeading = avoidThreatHeading(bestSection, nearestTorpedo, 45, 45);
+                System.out.println(String.valueOf(distanceToTorpedo));
+                System.out.println("Torpedo, change directionnn !!");
+            }
             // Consider nearest enemies
             if (!nearestEnemiesList.isEmpty() && getActualDistance(this.bot, nearestEnemiesList.get(0)) < toll) {
                 GameObject nearestEnemy = nearestEnemiesList.get(0);
