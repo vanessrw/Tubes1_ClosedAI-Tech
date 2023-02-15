@@ -90,10 +90,27 @@ public class BotService {
                 nearestEnemy = null;
             }
             
+            // Nearest consumables
+            List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
+            GameObject nearestConsumable;
+            if (!nearestConsumables.isEmpty()) {
+                nearestConsumable = nearestConsumables.get(0);
+            } else {
+                nearestConsumable = null;
+            }
+
             // Check if out of bounds
             if (getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld().getRadius()) {
-                playerAction.heading = getHeadingBetween(centerPoint);
-                System.out.println("Whoops.. to center");
+                playerAction.action = PlayerActions.FORWARD;
+                if (nearestConsumable == null) {
+                    playerAction.heading = getHeadingBetween(nearestConsumable);
+                    System.out.println("Whoops.. nom nom");
+                } else {
+                    playerAction.heading = getHeadingBetween(centerPoint);
+                    System.out.println("Whoops.. to center");
+                }
+                this.playerAction = playerAction;
+                return;
             }
     
             // Check if near or in an obstacle
@@ -107,26 +124,34 @@ public class BotService {
     
             if (nearestObstacle != null && getDistanceBetween(nearestObstacle, this.bot) < (1.75 * this.bot.getSize() + nearestObstacle.getSize())) {
                 // Get nearest consumable outside of obstacle
-                GameObject nearestObjectOutside = getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
+                List<GameObject> nearestObjectOutside = getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
                                                     .stream().filter(item -> getDistanceBetween(item, nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
                                                     .sorted(Comparator.comparing(item -> getDistanceBetween(this.bot, item)))
-                                                    .collect(Collectors.toList()).get(0);
-                playerAction.heading = getHeadingBetween(nearestObjectOutside);
-                System.out.println("Avoiding obstacles..");
+                                                    .collect(Collectors.toList());
+                if (!nearestObjectOutside.isEmpty()) {
+                    playerAction.heading = getHeadingBetween(nearestObjectOutside.get(0));
+                    playerAction.action = PlayerActions.FORWARD;
+                    this.playerAction = playerAction;
+                    System.out.println("Avoiding obstacles..");
+                    return;
+                }
             }
     
             // Consider enemies
             if ((nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) || (nearestEnemy != null && this.bot.getSize() >= 35 && getActualDistance(this.bot, nearestEnemy) <= 200)) {
+            // if (nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) {
                 playerAction.heading = getHeadingBetween(nearestEnemy);
                 playerAction.action = PlayerActions.FIRETORPEDOES;
                 System.out.println("Pew pew pew");
+                this.playerAction = playerAction;
+                return;
             } else {
             // Consider other targets
                 playerAction.heading = getOptimalHeading(this.toll);
                 playerAction.action = PlayerActions.FORWARD;
+                this.playerAction = playerAction;
+                return;
             }
-    
-            this.playerAction = playerAction;
         }
     }
 
