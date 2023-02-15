@@ -12,7 +12,8 @@ public class Bot {
   protected GameObject bot;
   protected PlayerAction playerAction;
   protected GameState gameState;
-  protected GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null);
+  protected GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null, null, null,
+      null, null);
 
   // PRIVATE METHOD
   private void updateSelfState() {
