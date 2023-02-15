@@ -11,7 +11,7 @@ public class BotService {
     private GameObject bot;
     private PlayerAction playerAction;
     private GameState gameState;
-    private GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null);
+    private GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null, null, null, null, null);
 
     // Hyperparameters
     // toll: Tollerance distance to nearby smaller enemies
@@ -68,6 +68,12 @@ public class BotService {
         return (direction + 360) % 360;
     }
 
+    // private int getHeadingBetween(GameObject object1, GameObject object2) {
+    //     int direction = toDegrees(Math.atan2(object2.getPosition().y - object1.getPosition().y,
+    //             object2.getPosition().x - object1.getPosition().x));
+    //     return (direction + 360) % 360;
+    // }
+
     private int toDegrees(double v) {
         return (int) (v * (180 / Math.PI));
     }
@@ -89,6 +95,43 @@ public class BotService {
             } else {
                 nearestEnemy = null;
             }
+
+            // Teleporting
+            GameObject largestSmallerEnemy = null;
+            int largestSmallerEnemySize = 0;
+            for (GameObject player: gameState.getPlayerGameObjects()) {
+                if (player.getId() != this.bot.getId() && this.bot.getSize() - 30 > player.getSize() && player.getSize() > largestSmallerEnemySize) {
+                    largestSmallerEnemy = player;
+                }
+            }
+
+            if (largestSmallerEnemy != null && this.bot.getSize() > 80 && this.bot.getSize() > largestSmallerEnemy.getSize() && this.bot.getTeleportCount() > 0) {
+                playerAction.action = PlayerActions.FIRETELEPORT;
+                playerAction.heading = getHeadingBetween(largestSmallerEnemy);
+                this.playerAction = playerAction;
+                System.out.println("Ejecting teleporter..");
+                return;
+            }
+
+            if (!gameState.getGameObjects().isEmpty() && largestSmallerEnemy != null) {
+                for (GameObject object: gameState.getGameObjects()) {
+                    if (object.getGameObjectType() == ObjectTypes.TELEPORTER) {
+                        // List<GameObject> closestEnemy = gameState.getPlayerGameObjects()
+                        // .stream().filter(item -> item.getGameObjectType() == ObjectTypes.PLAYER && item.getId() != this.bot.getId())
+                        // .sorted(Comparator
+                        //         .comparing(item -> getActualDistance(object, item)))
+                        // .collect(Collectors.toList());
+                        if (getActualDistance(largestSmallerEnemy, object) < this.bot.getSize() - 30) {
+                            playerAction.action = PlayerActions.TELEPORT;
+                            playerAction.heading = getOptimalHeading(toll);
+                            this.playerAction = playerAction;
+                            System.out.println("Teleporting..");
+                            return;
+                        }
+                    }
+                }
+            }
+
             
             // Nearest consumables
             List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
@@ -99,10 +142,20 @@ public class BotService {
                 nearestConsumable = null;
             }
 
+            // Check if an enemy weapon is incoming
+            // if (isTorpedoIncoming() && this.bot.getSize() > 100 && this.playerAction.action != PlayerActions.ACTIVATESHIELD) {
+            //     playerAction.action = PlayerActions.ACTIVATESHIELD;
+            //     System.out.println("Shieldddd");
+            //     playerAction.heading = getOptimalHeading(toll);
+            //     // playerAction.heading = getHeadingBetween(nearestConsumable);
+            //     this.playerAction = playerAction;
+            //     return;
+            // }
+
             // Check if out of bounds
             if (getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld().getRadius()) {
                 playerAction.action = PlayerActions.FORWARD;
-                if (nearestConsumable == null) {
+                if (nearestConsumable != null) {
                     playerAction.heading = getHeadingBetween(nearestConsumable);
                     System.out.println("Whoops.. nom nom");
                 } else {
@@ -316,6 +369,34 @@ public class BotService {
 
         System.out.println("Nothing of concern..");
         return getHeadingBetween(centerPoint);
-
     }
+
+    // private double getOrthogonalProjectionMagnitude(GameObject object1, GameObject object2) {
+    //     // Get orthogonal projection of object2 velocity vector to object1
+    //     int angleBetween = Math.abs(object2.currentHeading - getHeadingBetween(object2, object1));
+    //     double projMagnitude = object2.getSpeed() * Math.sin(Math.toRadians(angleBetween)); 
+    //     return Math.abs(projMagnitude);
+    // }
+
+    // private boolean isTorpedoIncoming() {
+    //     List <GameObject> nearestWeapons = getNearestObjects(gameState.getGameObjects(), "WEAPONS");
+    //     if (nearestWeapons.isEmpty() || nearestWeapons == null) {
+    //         return false;
+    //     }
+
+    //     GameObject nearestWeapon = nearestWeapons.get(0);
+
+    //     if (Math.abs(getHeadingBetween(nearestWeapon, bot) - nearestWeapon.currentHeading) > 90) {
+    //         return false;
+    //     }
+        
+    //     // if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 50 && getOrthogonalProjectionMagnitude(this.bot, nearestWeapon) <= this.bot.getSize()) {
+    //     if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 100) {
+    //         // System.out.println("Orthogonal Projection: " + String.valueOf(getOrthogonalProjectionMagnitude(this.bot, nearestWeapon)));
+    //         // System.out.println("Bot radius: " + String.valueOf(this.bot.getSize()));
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
 }
