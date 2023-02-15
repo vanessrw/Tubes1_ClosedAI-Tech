@@ -74,7 +74,7 @@ public class GameObject {
 
   public static GameObject FromStateList(UUID id, List<Integer> stateList) {
     Position position = new Position(stateList.get(4), stateList.get(5));
-    if (stateList.size() == 1) {
+    if (stateList.size() == 11) {
       return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position,
           ObjectTypes.valueOf(stateList.get(3)), stateList.get(6), stateList.get(7), stateList.get(8), stateList.get(9),
           stateList.get(10));
@@ -85,29 +85,29 @@ public class GameObject {
     }
   }
 
-  // public int getTorpedoCount(){
-  // return TorpedoSalvoCount;
-  // }
+  public int getTorpedoCount() {
+    return TorpedoSalvoCount;
+  }
 
-  // public int getSupernovaCount(){
-  // return SupernovaAvailable;
-  // }
+  public int getSupernovaCount() {
+    return SupernovaAvailable;
+  }
 
-  // public int getTeleportCount(){
-  // return TeleportCount;
-  // }
+  public int getTeleportCount() {
+    return TeleportCount;
+  }
 
-  // public int getShieldCount(){
-  // return ShieldCount;
-  // }
+  public int getShieldCount() {
+    return ShieldCount;
+  }
 
-  // public void setEffects(Integer effects) {
-  // this.effects = effects;
-  // }
+  public void setEffects(Integer effects) {
+    this.effects = effects;
+  }
 
-  // public Integer getEffects() {
-  // return this.effects;
-  // }
+  public Integer getEffects() {
+    return this.effects;
+  }
 
   // public static GameObject FromStateList(UUID id, List<Integer> stateList)
   // {

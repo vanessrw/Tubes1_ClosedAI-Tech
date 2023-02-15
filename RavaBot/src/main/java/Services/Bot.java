@@ -124,4 +124,24 @@ public class Bot {
 
     return filteredList;
   }
+
+  public boolean isAfterburnerActive() {
+    return (this.bot.getEffects() & 0x00001) == 1;
+  }
+
+  public boolean isInAsteroidField() {
+    return (this.bot.getEffects() & 0x00010) == 1;
+  }
+
+  public boolean isInGasCloud() {
+    return (this.bot.getEffects() & 0x00100) == 1;
+  }
+
+  public boolean isOnSuperfood() {
+    return (this.bot.getEffects() & 0x01000) == 1;
+  }
+
+  public boolean isShieldActive() {
+    return (this.bot.getEffects() & 0x10000) == 1;
+  }
 }

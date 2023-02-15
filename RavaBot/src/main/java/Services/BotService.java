@@ -25,8 +25,9 @@ public class BotService extends Bot {
       }
 
       // Check if out of bounds
-      if (BotUtil.getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld()
-          .getRadius()) {
+      if (BotUtil.getDistanceBetween(centerPoint, bot) + (1.75 *
+          this.bot.getSize()) + 50 > this.gameState.getWorld()
+              .getRadius()) {
         playerAction.heading = getHeadingBetween(centerPoint);
         System.out.println("Whoops.. to center");
       }
@@ -48,7 +49,8 @@ public class BotService extends Bot {
             .stream()
             .filter(item -> BotUtil.getDistanceBetween(item,
                 nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
-            .sorted(Comparator.comparing(item -> BotUtil.getDistanceBetween(this.bot, item)))
+            .sorted(Comparator.comparing(item -> BotUtil.getDistanceBetween(this.bot,
+                item)))
             .collect(Collectors.toList()).get(0);
         playerAction.heading = getHeadingBetween(nearestObjectOutside);
         System.out.println("Avoiding obstacles..");

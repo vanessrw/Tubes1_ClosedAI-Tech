@@ -1,5 +1,9 @@
 package Services;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import Models.*;
 
 public class BotUtil {
@@ -22,5 +26,18 @@ public class BotUtil {
     double triangleY = Math.abs(object.getPosition().y);
     double distanceToCenter = Math.sqrt(triangleX * triangleX + triangleY * triangleY);
     return gameState.getWorld().getRadius() - distanceToCenter - object.getSize();
+  }
+
+  public static void writeToFile(GameState gameState, String fileName) {
+    try {
+      FileWriter fileWriter = new FileWriter(fileName, true);
+      BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+      // if(bufferedWriter)
+      bufferedWriter.write(String.valueOf(gameState.getWorld().getCurrentTick()));
+      bufferedWriter.newLine();
+      bufferedWriter.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
