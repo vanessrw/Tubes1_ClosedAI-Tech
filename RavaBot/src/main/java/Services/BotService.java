@@ -123,12 +123,28 @@ public class BotService extends Bot {
         nearestEnemy = null;
       }
 
+      // Nearest consumables
+      List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
+      GameObject nearestConsumable;
+      if (!nearestConsumables.isEmpty()) {
+        nearestConsumable = nearestConsumables.get(0);
+      } else {
+        nearestConsumable = null;
+      }
+
       // Check if out of bounds
-      if (BotUtil.getDistanceBetween(centerPoint, bot) + (1.75 *
-          this.bot.getSize()) + 50 > this.gameState.getWorld()
-              .getRadius()) {
-        playerAction.heading = getHeadingBetween(centerPoint);
-        System.out.println("Whoops.. to center");
+      if (BotUtil.getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld()
+          .getRadius()) {
+        playerAction.action = PlayerActions.FORWARD;
+        if (nearestConsumable != null) {
+          playerAction.heading = this.getHeadingBetween(nearestConsumable);
+          System.out.println("Whoops.. nom nom");
+        } else {
+          playerAction.heading = this.getHeadingBetween(centerPoint);
+          System.out.println("Whoops.. to center");
+        }
+        this.playerAction = playerAction;
+        return;
       }
 
       // Check if near or in an obstacle
