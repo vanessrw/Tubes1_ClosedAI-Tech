@@ -12,6 +12,8 @@ public class BotService {
     private PlayerAction playerAction;
     private GameState gameState;
     private GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null, null, null, null, null);
+    private boolean isFiringTeleporter = false;
+    private int fireTeleporterTick = 0;
 
     // Hyperparameters
     // toll: Tollerance distance to nearby smaller enemies
@@ -68,11 +70,11 @@ public class BotService {
         return (direction + 360) % 360;
     }
 
-    // private int getHeadingBetween(GameObject object1, GameObject object2) {
-    //     int direction = toDegrees(Math.atan2(object2.getPosition().y - object1.getPosition().y,
-    //             object2.getPosition().x - object1.getPosition().x));
-    //     return (direction + 360) % 360;
-    // }
+    private int getHeadingBetween(GameObject object1, GameObject object2) {
+        int direction = toDegrees(Math.atan2(object2.getPosition().y - object1.getPosition().y,
+                object2.getPosition().x - object1.getPosition().x));
+        return (direction + 360) % 360;
+    }
 
     private int toDegrees(double v) {
         return (int) (v * (180 / Math.PI));
@@ -87,52 +89,58 @@ public class BotService {
         playerAction.heading = new Random().nextInt(360);
 
         if (!gameState.getPlayerGameObjects().isEmpty()) {
-            // Nearest enemy
-            List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
-            GameObject nearestEnemy;
-            if (!nearestEnemies.isEmpty()) {
-                nearestEnemy = nearestEnemies.get(0);
-            } else {
-                nearestEnemy = null;
+            
+            // Teleporting
+            if (isFiringTeleporter) {
+                System.out.println("Is firing teleporter");
             }
 
-            // Teleporting
+            if (this.isFiringTeleporter && getNearestObjects(gameState.getGameObjects(), "TRAVERSAL").isEmpty() && gameState.getWorld().getCurrentTick() - this.fireTeleporterTick > 40) {
+                this.isFiringTeleporter = false;
+            }
+
             GameObject largestSmallerEnemy = null;
             int largestSmallerEnemySize = 0;
             for (GameObject player: gameState.getPlayerGameObjects()) {
-                if (player.getId() != this.bot.getId() && this.bot.getSize() - 30 > player.getSize() && player.getSize() > largestSmallerEnemySize) {
+                if (player.getId() != this.bot.getId() && this.bot.getSize() - 15 > player.getSize() && player.getSize() > largestSmallerEnemySize) {
                     largestSmallerEnemy = player;
                 }
             }
 
-            if (largestSmallerEnemy != null && this.bot.getSize() > 80 && this.bot.getSize() > largestSmallerEnemy.getSize() && this.bot.getTeleportCount() > 0) {
-                playerAction.action = PlayerActions.FIRETELEPORT;
-                playerAction.heading = getHeadingBetween(largestSmallerEnemy);
-                this.playerAction = playerAction;
-                System.out.println("Ejecting teleporter..");
-                return;
-            }
-
-            if (!gameState.getGameObjects().isEmpty() && largestSmallerEnemy != null) {
-                for (GameObject object: gameState.getGameObjects()) {
-                    if (object.getGameObjectType() == ObjectTypes.TELEPORTER) {
-                        // List<GameObject> closestEnemy = gameState.getPlayerGameObjects()
-                        // .stream().filter(item -> item.getGameObjectType() == ObjectTypes.PLAYER && item.getId() != this.bot.getId())
-                        // .sorted(Comparator
-                        //         .comparing(item -> getActualDistance(object, item)))
-                        // .collect(Collectors.toList());
-                        if (getActualDistance(largestSmallerEnemy, object) < this.bot.getSize() - 30) {
+            if (this.isFiringTeleporter && !gameState.getGameObjects().isEmpty() && largestSmallerEnemy != null) {
+                for (GameObject teleporter: gameState.getGameObjects()) {
+                    if (teleporter.getGameObjectType() == ObjectTypes.TELEPORTER) {
+                        if (getActualDistance(largestSmallerEnemy, teleporter) < this.bot.getSize() && largestSmallerEnemy.getSize() < this.bot.getSize()) {
                             playerAction.action = PlayerActions.TELEPORT;
                             playerAction.heading = getOptimalHeading(toll);
                             this.playerAction = playerAction;
                             System.out.println("Teleporting..");
+                            this.isFiringTeleporter = false;
                             return;
                         }
                     }
                 }
             }
 
+            if (!this.isFiringTeleporter && largestSmallerEnemy != null && this.bot.getSize() > 80 && this.bot.getSize() > largestSmallerEnemy.getSize() && this.bot.getTeleportCount() > 0) {
+                playerAction.action = PlayerActions.FIRETELEPORT;
+                playerAction.heading = getHeadingBetween(largestSmallerEnemy);
+                this.playerAction = playerAction;
+                this.fireTeleporterTick = gameState.getWorld().getCurrentTick();
+                System.out.println("Ejecting teleporter..");
+                this.isFiringTeleporter = true;
+                return;
+            }
             
+            // Check if an enemy weapon is incoming
+            // if (isTorpedoIncoming() && this.bot.getSize() > 100 && this.playerAction.action != PlayerActions.ACTIVATESHIELD) {
+            //     playerAction.action = PlayerActions.ACTIVATESHIELD;
+            //     System.out.println("Shieldddd");
+            //     playerAction.heading = getOptimalHeading(toll);
+            //     this.playerAction = playerAction;
+            //     // return;
+            // }
+
             // Nearest consumables
             List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
             GameObject nearestConsumable;
@@ -141,17 +149,7 @@ public class BotService {
             } else {
                 nearestConsumable = null;
             }
-
-            // Check if an enemy weapon is incoming
-            // if (isTorpedoIncoming() && this.bot.getSize() > 100 && this.playerAction.action != PlayerActions.ACTIVATESHIELD) {
-            //     playerAction.action = PlayerActions.ACTIVATESHIELD;
-            //     System.out.println("Shieldddd");
-            //     playerAction.heading = getOptimalHeading(toll);
-            //     // playerAction.heading = getHeadingBetween(nearestConsumable);
-            //     this.playerAction = playerAction;
-            //     return;
-            // }
-
+            
             // Check if out of bounds
             if (getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld().getRadius()) {
                 playerAction.action = PlayerActions.FORWARD;
@@ -166,6 +164,15 @@ public class BotService {
                 return;
             }
     
+            // Consider enemies
+            if ((getHighestRatioEnemy() != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, getHighestRatioEnemy()) <= this.toll) || (getHighestRatioEnemy() != null && this.bot.getSize() >= 35 && getActualDistance(this.bot, getHighestRatioEnemy()) <= 200)) {
+                playerAction.heading = getHeadingBetween(getHighestRatioEnemy());
+                playerAction.action = PlayerActions.FIRETORPEDOES;
+                System.out.println("Pew pew pew");
+                this.playerAction = playerAction;
+                return;
+            }
+            
             // Check if near or in an obstacle
             List<GameObject> nearestObstacles = getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
             GameObject nearestObstacle;
@@ -189,22 +196,12 @@ public class BotService {
                     return;
                 }
             }
-    
-            // Consider enemies
-            if ((nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) || (nearestEnemy != null && this.bot.getSize() >= 35 && getActualDistance(this.bot, nearestEnemy) <= 200)) {
-            // if (nearestEnemy != null && this.bot.getSize() >= 70 && getActualDistance(this.bot, nearestEnemy) <= this.toll) {
-                playerAction.heading = getHeadingBetween(nearestEnemy);
-                playerAction.action = PlayerActions.FIRETORPEDOES;
-                System.out.println("Pew pew pew");
-                this.playerAction = playerAction;
-                return;
-            } else {
+            
             // Consider other targets
-                playerAction.heading = getOptimalHeading(this.toll);
-                playerAction.action = PlayerActions.FORWARD;
-                this.playerAction = playerAction;
-                return;
-            }
+            playerAction.heading = getOptimalHeading(this.toll);
+            playerAction.action = PlayerActions.FORWARD;
+            this.playerAction = playerAction;
+            return;
         }
     }
 
@@ -224,7 +221,7 @@ public class BotService {
 
         } else if (category == "CONSUMABLES") {
             filteredList = objectList
-            .stream().filter(item -> (item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP) && getDistanceToNearestBorder(item) > this.bot.getSize() * 2.5 + this.bot.getSpeed() + 150)
+            .stream().filter(item -> (item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD || item.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP) && getDistanceToNearestBorder(item) > this.bot.getSize() * 2.5 + this.bot.getSpeed() + 150)
                     .sorted(Comparator
                             .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
@@ -238,14 +235,14 @@ public class BotService {
 
         } else if (category == "WEAPONS") {
             filteredList = objectList
-                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDO_SALVO || item.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB)
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDOSALVO || item.getGameObjectType() == ObjectTypes.SUPERNOVABOMB)
                     .sorted(Comparator
                             .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
 
         } else if (category == "TRAVERSAL") {
             filteredList = objectList
-                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.WORMHOLE)
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TELEPORTER)
                     .sorted(Comparator
                             .comparing(item -> getActualDistance(bot, item)))
                     .collect(Collectors.toList());
@@ -259,13 +256,28 @@ public class BotService {
         return filteredList;
     }
 
+    private GameObject getHighestRatioEnemy() {
+        double maxRatio = 0.0;
+        GameObject maxRatioPlayer = null;
+        if (!gameState.getPlayerGameObjects().isEmpty()) {
+            for (GameObject player: gameState.getPlayerGameObjects()) {
+                if (player.getId() != this.bot.getId() && player.getSize()/getActualDistance(this.bot, player) > maxRatio) {
+                    maxRatio = player.getSize()/getActualDistance(this.bot, player);
+                    maxRatioPlayer = player;
+                }
+            }
+        }
+
+        return maxRatioPlayer;
+    }
+
     private int avoidThreatHeading(List<GameObject> objectList, GameObject threat, int minDegree, int maxDegree) {
         if (!objectList.isEmpty()) {
             List<GameObject> resources = objectList
                         .stream().filter(item -> (
                             item.getGameObjectType() == ObjectTypes.FOOD ||
                             item.getGameObjectType() == ObjectTypes.SUPERFOOD ||
-                            item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP ||
+                            item.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP ||
                             (item.getGameObjectType() == ObjectTypes.PLAYER && item.getSize() < this.bot.getSize() && Math.abs(item.getSize() - this.bot.getSize()) > 30)
                         ))
                         .sorted(Comparator
@@ -301,6 +313,7 @@ public class BotService {
                     
                     if (nearestTarget != null) {
                         System.out.println("Runnn");
+                        System.out.println(String.valueOf(getActualDistance(threat, this.bot)));
                         return getHeadingBetween(nearestTarget);
                     } else {
                         System.out.println("Yolo");
@@ -347,7 +360,7 @@ public class BotService {
         if (nearestEnemy != null) {
             // If enemy is bigger
             if (nearestEnemy.getSize() >= this.bot.getSize()) {
-                return avoidThreatHeading(allObjects, nearestEnemy, 45, 45);
+                return avoidThreatHeading(allObjects, nearestEnemy, 60, 60);
             }
             
             // If enemy is significantly smaller
@@ -371,32 +384,32 @@ public class BotService {
         return getHeadingBetween(centerPoint);
     }
 
-    // private double getOrthogonalProjectionMagnitude(GameObject object1, GameObject object2) {
-    //     // Get orthogonal projection of object2 velocity vector to object1
-    //     int angleBetween = Math.abs(object2.currentHeading - getHeadingBetween(object2, object1));
-    //     double projMagnitude = object2.getSpeed() * Math.sin(Math.toRadians(angleBetween)); 
-    //     return Math.abs(projMagnitude);
-    // }
+    private double getOrthogonalProjectionMagnitude(GameObject object1, GameObject object2) {
+        // Get orthogonal projection of object2 velocity vector to object1
+        int angleBetween = Math.abs(object2.currentHeading - getHeadingBetween(object2, object1));
+        double projMagnitude = object2.getSpeed() * Math.sin(Math.toRadians(angleBetween)); 
+        return Math.abs(projMagnitude);
+    }
 
-    // private boolean isTorpedoIncoming() {
-    //     List <GameObject> nearestWeapons = getNearestObjects(gameState.getGameObjects(), "WEAPONS");
-    //     if (nearestWeapons.isEmpty() || nearestWeapons == null) {
-    //         return false;
-    //     }
+    private boolean isTorpedoIncoming() {
+        List <GameObject> nearestWeapons = getNearestObjects(gameState.getGameObjects(), "WEAPONS");
+        if (nearestWeapons.isEmpty() || nearestWeapons == null) {
+            return false;
+        }
 
-    //     GameObject nearestWeapon = nearestWeapons.get(0);
+        GameObject nearestWeapon = nearestWeapons.get(0);
 
-    //     if (Math.abs(getHeadingBetween(nearestWeapon, bot) - nearestWeapon.currentHeading) > 90) {
-    //         return false;
-    //     }
+        if (Math.abs(getHeadingBetween(nearestWeapon, bot) - nearestWeapon.currentHeading) > 90) {
+            return false;
+        }
         
-    //     // if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 50 && getOrthogonalProjectionMagnitude(this.bot, nearestWeapon) <= this.bot.getSize()) {
-    //     if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 100) {
-    //         // System.out.println("Orthogonal Projection: " + String.valueOf(getOrthogonalProjectionMagnitude(this.bot, nearestWeapon)));
-    //         // System.out.println("Bot radius: " + String.valueOf(this.bot.getSize()));
-    //         return true;
-    //     }
+        if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 50 && getOrthogonalProjectionMagnitude(this.bot, nearestWeapon) <= this.bot.getSize()) {
+        // if (getActualDistance(this.bot, nearestWeapon) - nearestWeapon.getSpeed() < 100) {
+            System.out.println("Orthogonal Projection: " + String.valueOf(getOrthogonalProjectionMagnitude(this.bot, nearestWeapon)));
+            System.out.println("Bot radius: " + String.valueOf(this.bot.getSize()));
+            return true;
+        }
 
-    //     return false;
-    // }
+        return false;
+    }
 }
