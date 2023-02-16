@@ -16,20 +16,34 @@ public class GameObject {
   public Integer TeleportCount;
   public Integer ShieldCount;
 
+<<<<<<< HEAD
   public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading,
       Position position, ObjectTypes gameObjectType, Integer effect, Integer torpedo_count, Integer supernovaAvailable,
       Integer teleporterCount, Integer shieldCount) {
+=======
+  public GameObject(UUID id, Integer size, Integer speed, Integer currentHeading, 
+  Position position, ObjectTypes gameObjectType, Integer effects, Integer torpedo_count,
+  Integer supernova_avail, Integer teleporter_count, Integer shield_count) {
+>>>>>>> 3c419f3fa95a78e778e4ace4fa4740d7a6ae5f90
     this.id = id;
     this.size = size;
     this.speed = speed;
     this.currentHeading = currentHeading;
     this.position = position;
     this.gameObjectType = gameObjectType;
+<<<<<<< HEAD
     this.effects = effect;
     this.TorpedoSalvoCount = torpedo_count;
     this.SupernovaAvailable = supernovaAvailable;
     this.TeleportCount = teleporterCount;
     this.ShieldCount = shieldCount;
+=======
+    this.effects = effects;
+    this.TorpedoSalvoCount = torpedo_count;
+    this.SupernovaAvailable = supernova_avail;
+    this.TeleportCount = teleporter_count;
+    this.ShieldCount = shield_count;
+>>>>>>> 3c419f3fa95a78e778e4ace4fa4740d7a6ae5f90
   }
 
   public UUID getId() {
@@ -78,6 +92,7 @@ public class GameObject {
 
   public static GameObject FromStateList(UUID id, List<Integer> stateList) {
     Position position = new Position(stateList.get(4), stateList.get(5));
+<<<<<<< HEAD
     if (stateList.size() == 11) {
       return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position,
           ObjectTypes.valueOf(stateList.get(3)), stateList.get(6), stateList.get(7), stateList.get(8), stateList.get(9),
@@ -137,5 +152,40 @@ public class GameObject {
   // stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)),
   // stateList.get(7), stateList(6), stateList(8), stateList(10), stateList(9));
   // }
+=======
+    if (stateList.size() <= 7) {
+      return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)), 0, 0, 0, 0, 0);
+    } else {
+      return new GameObject(id, stateList.get(0), stateList.get(1), stateList.get(2), position, ObjectTypes.valueOf(stateList.get(3)), stateList.get(6), stateList.get(7), stateList.get(8), stateList.get(9), stateList.get(10));
+    }
+  }
+  
+  public int getTorpedoCount(){
+    return TorpedoSalvoCount;
+  }
+
+  public int getSupernovaCount(){
+    return SupernovaAvailable;
+  }
+
+  public int getTeleportCount(){
+    return TeleportCount;
+  }
+
+  public int getShieldCount(){
+    return ShieldCount;
+  }
+
+
+  public void setEffects(Integer effects) {
+    this.effects = effects;
+  }
+
+  public Integer getEffects() {
+    return this.effects;
+  }
+  
+}
+>>>>>>> 3c419f3fa95a78e778e4ace4fa4740d7a6ae5f90
 
 }
