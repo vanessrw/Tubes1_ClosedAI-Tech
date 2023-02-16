@@ -23,10 +23,10 @@ public class Bot {
   }
 
   // PUBLIC METHOD
-  public Bot() {
-    this.playerAction = new PlayerAction();
-    this.gameState = new GameState();
-  }
+  // public Bot() {
+  // this.playerAction = new PlayerAction();
+  // this.gameState = new GameState();
+  // }
 
   public GameObject getBot() {
     return this.bot;

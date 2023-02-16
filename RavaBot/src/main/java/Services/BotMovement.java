@@ -72,21 +72,11 @@ public class BotMovement {
     // Get the nearest consumables
     List<GameObject> nearestConsumables = player.getNearestObjects(player.getGameState().getGameObjects(),
         "CONSUMABLES");
-    GameObject nearestConsumable;
-    if (!nearestConsumables.isEmpty()) {
-      nearestConsumable = nearestConsumables.get(0);
-    } else {
-      nearestConsumable = null;
-    }
+    GameObject nearestConsumable = !nearestConsumables.isEmpty() ? nearestConsumables.get(0) : null;
 
     // Get the nearest enemy
     List<GameObject> nearestEnemies = player.getNearestObjects(player.getGameState().getPlayerGameObjects(), "ENEMY");
-    GameObject nearestEnemy;
-    if (!nearestEnemies.isEmpty()) {
-      nearestEnemy = nearestEnemies.get(0);
-    } else {
-      nearestEnemy = null;
-    }
+    GameObject nearestEnemy = !nearestEnemies.isEmpty() ? nearestEnemies.get(0) : null;
 
     // Consider nearest enemy bot
     if (nearestEnemy != null) {
@@ -96,11 +86,11 @@ public class BotMovement {
       }
 
       // If enemy is significantly smaller
-      if (Math.abs(nearestEnemy.getSize() - player.getBot().getSize()) > 30
-          && BotUtil.getActualDistance(player.getBot(), nearestEnemy) < toll) {
-        System.out.println("Kejar bot nih");
-        return player.getHeadingBetween(nearestEnemy);
-      }
+      // if (Math.abs(nearestEnemy.getSize() - player.getBot().getSize()) > 30
+      // && BotUtil.getActualDistance(player.getBot(), nearestEnemy) < toll) {
+      // System.out.println("Kejar bot nih");
+      // return player.getHeadingBetween(nearestEnemy);
+      // }
     }
 
     // If there are no enemy of concern, consider consumables

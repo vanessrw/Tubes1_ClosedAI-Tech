@@ -7,12 +7,17 @@ import java.util.*;
 import java.util.stream.*;
 
 public class BotService extends Bot {
+  public BotService() {
+    this.playerAction = new PlayerAction();
+    this.gameState = new GameState();
+  }
+
   // BOT LOGIC METHODS
   // =====================================================================
   // =====================================================================
   public void computeNextPlayerAction(PlayerAction playerAction) {
-    playerAction.action = PlayerActions.FORWARD;
-    playerAction.heading = new Random().nextInt(360);
+    // playerAction.action = PlayerActions.FORWARD;
+    // playerAction.heading = new Random().nextInt(360);
 
     if (!gameState.getPlayerGameObjects().isEmpty()) {
       // Nearest enemy
@@ -56,17 +61,25 @@ public class BotService extends Bot {
         System.out.println("Avoiding obstacles..");
       }
 
-      // Consider enemies
-      if (nearestEnemy != null && this.bot.getSize() >= 70
-          && BotUtil.getActualDistance(this.bot, nearestEnemy) <= this.toll) {
-        playerAction.heading = getHeadingBetween(nearestEnemy);
-        playerAction.action = PlayerActions.FIRETORPEDOES;
-        // BotAttack.attackEnemy(this, nearestEnemy);
+      if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50) {
+        boolean isOk = BotAttack.fireRandomTorpedo(this, this.getGameState().getGameObjects(), this.toll);
+
+        if (isOk) {
+          return;
+        }
+      }
+
+      if (nearestEnemy != null && this.getBot().getSize() - nearestEnemy.getSize() > 0
+          && BotUtil.getActualDistance(this.getBot(), nearestEnemy) < this.toll) {
+        // Attack enemies
+        playerAction = BotAttack.attackEnemy(this, nearestEnemy);
         System.out.println("Pew pew pew");
       } else {
         // Consider other targets
         playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
         playerAction.action = PlayerActions.FORWARD;
+
+        playerAction = BotAttack.checkAfterburner(this, playerAction);
       }
 
       this.playerAction = playerAction;
