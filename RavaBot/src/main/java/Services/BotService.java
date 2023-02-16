@@ -94,6 +94,9 @@ public class BotService extends Bot {
                 && largestSmallerEnemy.getSize() < this.bot.getSize()) {
               playerAction.action = PlayerActions.TELEPORT;
               playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
+
+              playerAction = BotAttack.checkAfterburner(this, playerAction);
+
               this.playerAction = playerAction;
               System.out.println("Teleporting..");
               this.isFiringTeleporter = false;
@@ -107,6 +110,9 @@ public class BotService extends Bot {
           && this.bot.getSize() > largestSmallerEnemy.getSize() && this.bot.getTeleportCount() > 0) {
         playerAction.action = PlayerActions.FIRETELEPORT;
         playerAction.heading = getHeadingBetween(largestSmallerEnemy);
+
+        playerAction = BotAttack.checkAfterburner(this, playerAction);
+
         this.playerAction = playerAction;
         this.fireTeleporterTick = gameState.getWorld().getCurrentTick();
         System.out.println("Ejecting teleporter..");
@@ -143,32 +149,11 @@ public class BotService extends Bot {
           playerAction.heading = this.getHeadingBetween(centerPoint);
           System.out.println("Whoops.. to center");
         }
+
+        playerAction = BotAttack.checkAfterburner(this, playerAction);
+
         this.playerAction = playerAction;
         return;
-      }
-
-      // Check if near or in an obstacle
-      List<GameObject> nearestObstacles = getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
-      GameObject nearestObstacle;
-      if (!nearestObstacles.isEmpty()) {
-        nearestObstacle = nearestObstacles.get(0);
-      } else {
-        nearestObstacle = null;
-      }
-
-      if (nearestObstacle != null
-          && BotUtil.getActualDistance(nearestObstacle,
-              this.bot) < 50) {
-        // Get nearest consumable outside of obstacle
-        GameObject nearestObjectOutside = getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
-            .stream()
-            .filter(item -> BotUtil.getActualDistance(item,
-                nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
-            .sorted(Comparator.comparing(item -> BotUtil.getDistanceBetween(this.bot,
-                item)))
-            .collect(Collectors.toList()).get(0);
-        playerAction.heading = getHeadingBetween(nearestObjectOutside);
-        System.out.println("Avoiding obstacles..");
       }
 
       if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50) {
@@ -184,13 +169,45 @@ public class BotService extends Bot {
         // Attack enemies
         playerAction = BotAttack.attackEnemy(this, nearestEnemy);
         System.out.println("Pew pew pew");
-      } else {
-        // Consider other targets
-        playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
-        playerAction.action = PlayerActions.FORWARD;
-
-        playerAction = BotAttack.checkAfterburner(this, playerAction);
+        this.playerAction = playerAction;
+        return;
       }
+
+      // Check if near or in an obstacle
+      List<GameObject> nearestObstacles = this.getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
+      GameObject nearestObstacle;
+      if (!nearestObstacles.isEmpty()) {
+        nearestObstacle = nearestObstacles.get(0);
+      } else {
+        nearestObstacle = null;
+      }
+
+      if (nearestObstacle != null && BotUtil.getDistanceBetween(nearestObstacle,
+          this.bot) < (1.75 * this.bot.getSize() + nearestObstacle.getSize())) {
+        // Get nearest consumable outside of obstacle
+        List<GameObject> nearestObjectOutside = this.getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
+            .stream()
+            .filter(item -> BotUtil.getDistanceBetween(item,
+                nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
+            .sorted(Comparator.comparing(item -> BotUtil.getDistanceBetween(this.bot, item)))
+            .collect(Collectors.toList());
+        if (!nearestObjectOutside.isEmpty()) {
+          playerAction.heading = getHeadingBetween(nearestObjectOutside.get(0));
+          playerAction.action = PlayerActions.FORWARD;
+
+          playerAction = BotAttack.checkAfterburner(this, playerAction);
+
+          this.playerAction = playerAction;
+          System.out.println("Avoiding obstacles..");
+          return;
+        }
+      }
+
+      // Consider other targets
+      playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
+      playerAction.action = PlayerActions.FORWARD;
+
+      playerAction = BotAttack.checkAfterburner(this, playerAction);
 
       this.playerAction = playerAction;
     }
