@@ -8,6 +8,14 @@ import java.util.stream.*;
 
 public class BotAttack {
   // PUBLIC METHOD
+
+  /**
+   * This function controls the logic of attacking enemy bot
+   * 
+   * @param player : Player's bot
+   * @param target : Enemy bot
+   * @return A new player action object to attack enemy
+   */
   public static PlayerAction attackEnemy(Bot player, GameObject target) {
     PlayerAction playerAction = new PlayerAction();
 
@@ -35,6 +43,14 @@ public class BotAttack {
     return playerAction;
   }
 
+  /**
+   * This function will stops the bot's afterburner when the bot is not attacking
+   * an enemy by modifying previous player action
+   * 
+   * @param player       : Player's bot
+   * @param playerAction : Player's previous action
+   * @return A new player action object to stop afterburner
+   */
   public static PlayerAction checkAfterburner(Bot player, PlayerAction playerAction) {
     if (player.isAfterburnerActive()) {
       playerAction.action = PlayerActions.STOPAFTERBURNER;
@@ -43,7 +59,14 @@ public class BotAttack {
     return playerAction;
   }
 
-  public static boolean fireRandomTorpedo(Bot player, List<GameObject> objectList, int toll) {
+  /**
+   * This function controls the logic of firing a random torpedo when the bot has
+   * reached its maximum salvo limit
+   * 
+   * @param player : Player's bot
+   * @return True when the bot has succeded firing a random torpedo
+   */
+  public static boolean fireRandomTorpedo(Bot player) {
     List<GameObject> nearestEnemies = player.getNearestObjects(player.getGameState().getPlayerGameObjects(), "ENEMY");
 
     if (nearestEnemies.isEmpty()) {

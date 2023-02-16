@@ -62,7 +62,7 @@ public class BotService extends Bot {
       }
 
       if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50) {
-        boolean isOk = BotAttack.fireRandomTorpedo(this, this.getGameState().getGameObjects(), this.toll);
+        boolean isOk = BotAttack.fireRandomTorpedo(this);
 
         if (isOk) {
           return;
