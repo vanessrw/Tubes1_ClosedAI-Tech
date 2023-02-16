@@ -60,6 +60,10 @@ public class GameObject {
     return position;
   }
 
+  public int getHeading() {
+    return this.currentHeading;
+  }
+
   public void setPosition(Position position) {
     this.position = position;
   }

@@ -47,12 +47,12 @@ public class BotService extends Bot {
       }
 
       if (nearestObstacle != null
-          && BotUtil.getDistanceBetween(nearestObstacle,
-              this.bot) < (1.75 * this.bot.getSize() + nearestObstacle.getSize())) {
+          && BotUtil.getActualDistance(nearestObstacle,
+              this.bot) < 50) {
         // Get nearest consumable outside of obstacle
         GameObject nearestObjectOutside = getNearestObjects(gameState.getGameObjects(), "CONSUMABLES")
             .stream()
-            .filter(item -> BotUtil.getDistanceBetween(item,
+            .filter(item -> BotUtil.getActualDistance(item,
                 nearestObstacle) > (1.75 * this.bot.getSize() + nearestObstacle.getSize()))
             .sorted(Comparator.comparing(item -> BotUtil.getDistanceBetween(this.bot,
                 item)))

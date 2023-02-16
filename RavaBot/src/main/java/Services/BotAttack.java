@@ -4,9 +4,24 @@ import Models.*;
 import Enums.*;
 
 import java.util.*;
-import java.util.stream.*;
 
 public class BotAttack {
+  // PRIVATE METHOD
+
+  /**
+   * This function checks if the alignment between the bot and its target is
+   * within a certain threshold
+   * 
+   * @param player     : Player's bot
+   * @param target     : Enemy bot
+   * @param tollerance : Degree threshold
+   * @return True when the alignment between the bot and its target is within a
+   *         certain threshold
+   */
+  private static boolean isAligned(Bot player, GameObject target, int tollerance) {
+    return Math.abs(target.getHeading() - player.getBot().getHeading()) <= tollerance;
+  }
+
   // PUBLIC METHOD
 
   /**
