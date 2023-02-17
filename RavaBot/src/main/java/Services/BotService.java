@@ -32,6 +32,7 @@ public class BotService extends Bot {
       if (player.getId() != this.bot.getId() && this.bot.getSize() - 15 > player.getSize()
           && player.getSize() > largestSmallerEnemySize) {
         largestSmallerEnemy = player;
+        largestSmallerEnemySize = player.getSize();
       }
     }
 
