@@ -4,7 +4,7 @@ import Models.*;
 import Enums.*;
 
 import java.util.*;
-import java.util.stream.*;
+// import java.util.stream.*;
 
 public class BotMovement {
   // PUBLIC METHOD
@@ -20,6 +20,7 @@ public class BotMovement {
 
     // If there are no enemy of concern, consider consumables
     if (nearestConsumable != null) {
+      System.out.println("Nom nom");
       return player.getHeadingBetween(nearestConsumable);
     }
 

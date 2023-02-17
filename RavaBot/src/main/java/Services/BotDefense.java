@@ -62,4 +62,54 @@ public class BotDefense {
 
     return playerAction;
   }
+
+  /**
+   * This function handles the usage of a shield
+   * 
+   * @param player : Player's bot
+   * @param gameState : State of the current game
+   * @return A new player action object to activate shield
+   */
+  public static PlayerAction activateShield(PlayerAction playerAction, Bot player, GameState gameState) {
+    if (BotDefense.isTorpedoIncoming(player, gameState)) {
+      System.out.println("Shield activated");
+      playerAction.action = PlayerActions.ACTIVATESHIELD;
+      playerAction.heading = player.getBot().currentHeading;
+    }
+    
+    return playerAction;
+  }
+
+  public static double getOrthogonalProjectionMagnitude(GameObject object1, GameObject object2) {
+    // Get orthogonal projection of object2 velocity vector to object1
+    int angleBetween = Math.abs(object2.currentHeading - BotUtil.getHeadingBetween(object2, object1));
+    double projMagnitude = object2.getSpeed() * Math.sin(Math.toRadians(angleBetween));
+    return Math.abs(projMagnitude);
+  }
+
+  public static boolean isTorpedoIncoming(Bot player, GameState gameState) {
+    List<GameObject> nearestWeapons = player.getNearestObjects(gameState.getGameObjects(), "WEAPONS");
+    if (nearestWeapons.isEmpty() || nearestWeapons == null) {
+      return false;
+    }
+
+    int countIncoming = 0;
+
+    for (GameObject weapon: nearestWeapons) {
+      if ((Math.abs(BotUtil.getHeadingBetween(weapon, player.getBot()) - weapon.currentHeading) < 90)
+      && BotUtil.getActualDistance(player.getBot(), weapon) - weapon.getSpeed() < 50
+      && BotDefense.getOrthogonalProjectionMagnitude(player.getBot(), weapon) <= player.getBot().getSize()) {
+        countIncoming += 1;
+      }
+
+      if (countIncoming > 2) {
+        System.out.println(
+          "Orthogonal Projection: " + String.valueOf(BotDefense.getOrthogonalProjectionMagnitude(player.getBot(), weapon)));
+        System.out.println("Bot radius: " + String.valueOf(player.getBot().getSize()));
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

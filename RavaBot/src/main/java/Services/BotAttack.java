@@ -6,22 +6,6 @@ import Enums.*;
 import java.util.*;
 
 public class BotAttack {
-  // PRIVATE METHOD
-
-  /**
-   * This function checks if the alignment between the bot and its target is
-   * within a certain threshold
-   * 
-   * @param player     : Player's bot
-   * @param target     : Enemy bot
-   * @param tollerance : Degree threshold
-   * @return True when the alignment between the bot and its target is within a
-   *         certain threshold
-   */
-  private static boolean isAligned(Bot player, GameObject target, int tollerance) {
-    return Math.abs(target.getHeading() - player.getBot().getHeading()) <= tollerance;
-  }
-
   // PUBLIC METHOD
 
   /**
@@ -35,7 +19,7 @@ public class BotAttack {
     PlayerAction playerAction = new PlayerAction();
 
     if (BotUtil.getActualDistance(player.getBot(), target) <= player.getToll() / 2
-        && player.getBot().getTorpedoCount() > 0) {
+        && player.getBot().getTorpedoCount() > 0 && player.getBot().getSize() >= 20) {
       playerAction.action = PlayerActions.FIRETORPEDOES;
       System.out.println("====================SHOOT===============");
       playerAction.heading = player.getHeadingBetween(target);
