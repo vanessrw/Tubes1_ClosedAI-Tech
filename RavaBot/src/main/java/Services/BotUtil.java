@@ -40,4 +40,10 @@ public class BotUtil {
       e.printStackTrace();
     }
   }
+
+  public static int getHeadingBetween(GameObject object1, GameObject object2) {
+    int direction = toDegrees(Math.atan2(object2.getPosition().y - object1.getPosition().y,
+        object2.getPosition().x - object1.getPosition().x));
+    return (direction + 360) % 360;
+  }
 }

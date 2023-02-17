@@ -14,7 +14,7 @@ public class BotMovement {
       List<GameObject> resources = objectList
           .stream().filter(item -> (item.getGameObjectType() == ObjectTypes.FOOD ||
               item.getGameObjectType() == ObjectTypes.SUPERFOOD ||
-              item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP ||
+              item.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP ||
               (item.getGameObjectType() == ObjectTypes.PLAYER && item.getSize() < player.getBot().getSize()
                   && Math.abs(item.getSize() - player.getBot().getSize()) > 30)))
           .sorted(Comparator

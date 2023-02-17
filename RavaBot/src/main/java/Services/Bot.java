@@ -14,6 +14,8 @@ public class Bot {
   protected GameState gameState;
   protected GameObject centerPoint = new GameObject(null, null, null, null, new Position(), null, null, null, null,
       null, null);
+  protected boolean isFiringTeleporter = false;
+  protected int fireTeleporterTick = 0;
 
   // PRIVATE METHOD
   private void updateSelfState() {
@@ -85,7 +87,7 @@ public class Bot {
           .stream()
           .filter(
               item -> item.getGameObjectType() == ObjectTypes.FOOD || item.getGameObjectType() == ObjectTypes.SUPERFOOD
-                  || item.getGameObjectType() == ObjectTypes.SUPERNOVA_PICKUP
+                  || item.getGameObjectType() == ObjectTypes.SUPERNOVAPICKUP
                       && BotUtil.getDistanceToNearestBorder(item, this.gameState) > this.bot.getSize() * 1.75)
           .sorted(Comparator
               .comparing(item -> BotUtil.getActualDistance(bot, item)))
@@ -103,8 +105,8 @@ public class Bot {
     } else if (category == "WEAPONS") {
       filteredList = objectList
           .stream()
-          .filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDO_SALVO
-              || item.getGameObjectType() == ObjectTypes.SUPERNOVA_BOMB)
+          .filter(item -> item.getGameObjectType() == ObjectTypes.TORPEDOSALVO
+              || item.getGameObjectType() == ObjectTypes.SUPERNOVABOMB)
           .sorted(Comparator
               .comparing(item -> BotUtil.getActualDistance(bot, item)))
           .collect(Collectors.toList());
