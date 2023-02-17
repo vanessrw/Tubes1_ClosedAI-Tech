@@ -45,6 +45,8 @@ Algoritma greedy yang paling mangkus saat digunakan untuk memenuhi objektif perm
 1. Game engine: https://github.com/EntelectChallenge/2021-Galaxio
 2. Game rules: https://github.com/EntelectChallenge/2021-Galaxio/blob/develop/game-engine/game-rules.md
 
+## Link video youtube: https://youtu.be/wU_TSO3Dj-8
+
 ## Anggota Kelompok
 #### [Enrique Alifio Ditya / 13521142](https://github.com/AlifioDitya)
 #### [Rava Maulana Azzikri / 13521149](https://github.com/RMA1403)
