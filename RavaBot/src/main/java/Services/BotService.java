@@ -67,7 +67,46 @@ public class BotService extends Bot {
     // playerAction.action = PlayerActions.FORWARD;
     // playerAction.heading = new Random().nextInt(360);
 
+    GameObject largestSmallerEnemy = null;
+    int largestSmallerEnemySize = 0;
+    for (GameObject player : gameState.getPlayerGameObjects()) {
+      if (player.getId() != this.bot.getId() && this.bot.getSize() - 15 > player.getSize()
+          && player.getSize() > largestSmallerEnemySize) {
+        largestSmallerEnemy = player;
+      }
+    }
+
+    // Nearest enemy
+    List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
+    GameObject nearestEnemy;
+    if (!nearestEnemies.isEmpty()) {
+      nearestEnemy = nearestEnemies.get(0);
+    } else {
+      nearestEnemy = null;
+    }
+
+    // Nearest consumables
+    List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
+    GameObject nearestConsumable;
+    if (!nearestConsumables.isEmpty()) {
+      nearestConsumable = nearestConsumables.get(0);
+    } else {
+      nearestConsumable = null;
+    }
+
+    List<GameObject> nearestObstacles = this.getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
+    GameObject nearestObstacle;
+    if (!nearestObstacles.isEmpty()) {
+      nearestObstacle = nearestObstacles.get(0);
+    } else {
+      nearestObstacle = null;
+    }
+
     if (!gameState.getPlayerGameObjects().isEmpty()) {
+      // Checks if the bot is in a gas cloud or asteroid field
+      if (BotMovement.checkObstacle(this)) {
+        return;
+      }
 
       // Teleporting
       if (this.isFiringTeleporter) {
@@ -80,22 +119,13 @@ public class BotService extends Bot {
         this.isFiringTeleporter = false;
       }
 
-      GameObject largestSmallerEnemy = null;
-      int largestSmallerEnemySize = 0;
-      for (GameObject player : gameState.getPlayerGameObjects()) {
-        if (player.getId() != this.bot.getId() && this.bot.getSize() - 15 > player.getSize()
-            && player.getSize() > largestSmallerEnemySize) {
-          largestSmallerEnemy = player;
-        }
-      }
-
       if (this.isFiringTeleporter && !gameState.getGameObjects().isEmpty() && largestSmallerEnemy != null) {
         for (GameObject teleporter : gameState.getGameObjects()) {
           if (teleporter.getGameObjectType() == ObjectTypes.TELEPORTER) {
             if (BotUtil.getActualDistance(largestSmallerEnemy, teleporter) < this.bot.getSize()
                 && largestSmallerEnemy.getSize() < this.bot.getSize()) {
               playerAction.action = PlayerActions.TELEPORT;
-              playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
+              playerAction.heading = BotMovement.getOptimalHeading(this);
               this.playerAction = playerAction;
               System.out.println("Teleporting..");
               this.isFiringTeleporter = false;
@@ -116,15 +146,6 @@ public class BotService extends Bot {
         return;
       }
 
-      // Nearest consumables
-      List<GameObject> nearestConsumables = getNearestObjects(gameState.getPlayerGameObjects(), "CONSUMABLES");
-      GameObject nearestConsumable;
-      if (!nearestConsumables.isEmpty()) {
-        nearestConsumable = nearestConsumables.get(0);
-      } else {
-        nearestConsumable = null;
-      }
-
       // Check if out of bounds
       if (BotUtil.getDistanceBetween(centerPoint, bot) + (1.75 * this.bot.getSize()) + 50 > this.gameState.getWorld()
           .getRadius()) {
@@ -142,7 +163,7 @@ public class BotService extends Bot {
       }
 
       // Consider enemies
-      if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50 ) {
+      if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50) {
         boolean isOk = BotAttack.fireRandomTorpedo(this);
 
         if (isOk) {
@@ -150,24 +171,23 @@ public class BotService extends Bot {
         }
       }
 
-      if (getHighestRatioEnemy() != null && this.getBot().getSize() - getHighestRatioEnemy().getSize() > 0
-          && BotUtil.getActualDistance(this.getBot(), getHighestRatioEnemy()) < this.toll) {
-        // Attack enemies
-        playerAction = BotAttack.attackEnemy(this, getHighestRatioEnemy());
-        System.out.println("Pew pew pew");
-        this.playerAction = playerAction;
-        return;
+      if (nearestEnemy != null
+          && BotUtil.getActualDistance(this.getBot(), nearestEnemy) < this.getBot().getSize() * 5) {
+        if (this.getBot().getSize() - nearestEnemy.getSize() > 0) {
+          // Attack enemies
+          playerAction = BotAttack.attackEnemy(this, nearestEnemy);
+          System.out.println("Pew pew pew");
+          this.playerAction = playerAction;
+          return;
+        } else {
+          playerAction = BotDefense.avoidThreatHeading(this, nearestEnemy);
+          System.out.println("cabut cabut cabut");
+          this.playerAction = playerAction;
+          return;
+        }
       }
 
       // Check if near or in an obstacle
-      List<GameObject> nearestObstacles = this.getNearestObjects(gameState.getGameObjects(), "OBSTACLES");
-      GameObject nearestObstacle;
-      if (!nearestObstacles.isEmpty()) {
-        nearestObstacle = nearestObstacles.get(0);
-      } else {
-        nearestObstacle = null;
-      }
-
       if (nearestObstacle != null && BotUtil.getDistanceBetween(nearestObstacle,
           this.bot) < (1.75 * this.bot.getSize() + nearestObstacle.getSize())) {
         // Get nearest consumable outside of obstacle
@@ -188,7 +208,7 @@ public class BotService extends Bot {
       }
 
       // Consider other targets
-      playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
+      playerAction.heading = BotMovement.getOptimalHeading(this);
       playerAction.action = PlayerActions.FORWARD;
 
       this.playerAction = playerAction;
