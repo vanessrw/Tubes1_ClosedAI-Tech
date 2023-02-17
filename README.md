@@ -1,4 +1,4 @@
-# Tugas Besar I IF2211 Strategi Algoritma
+# Tugas Besar 1 IF2211 Strategi Algoritma
 Pemanfaatan Algoritma Greedy dalam Aplikasi Permainan “Galaxio”
 
 ## Algoritma Greedy yang Diimplementasikan
