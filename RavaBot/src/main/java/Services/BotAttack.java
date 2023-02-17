@@ -34,7 +34,8 @@ public class BotAttack {
   public static PlayerAction attackEnemy(Bot player, GameObject target) {
     PlayerAction playerAction = new PlayerAction();
 
-    if (BotUtil.getActualDistance(player.getBot(), target) <= player.getToll() / 2) {
+    if (BotUtil.getActualDistance(player.getBot(), target) <= player.getToll() / 2
+        && player.getBot().getTorpedoCount() > 0) {
       playerAction.action = PlayerActions.FIRETORPEDOES;
       System.out.println("====================SHOOT===============");
       playerAction.heading = player.getHeadingBetween(target);
