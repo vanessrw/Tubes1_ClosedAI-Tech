@@ -1,0 +1,16 @@
+Enums\Effects.class
+Services\BotDefense.class
+Enums\ObjectTypes.class
+Models\PlayerAction.class
+Services\BotUtil.class
+Models\GameObject.class
+Main.class
+Services\Bot.class
+Enums\PlayerActions.class
+Models\GameState.class
+Services\BotAttack.class
+Services\BotService.class
+Models\GameStateDto.class
+Services\BotMovement.class
+Models\Position.class
+Models\World.class
