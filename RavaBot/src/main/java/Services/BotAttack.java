@@ -35,20 +35,11 @@ public class BotAttack {
     PlayerAction playerAction = new PlayerAction();
 
     if (BotUtil.getActualDistance(player.getBot(), target) <= player.getToll() / 2) {
-      if (player.isAfterburnerActive()) {
-        playerAction.action = PlayerActions.STOPAFTERBURNER;
-        System.out.println("================WAKTUNYA NEMBAK================");
-      } else {
-        playerAction.action = PlayerActions.FIRETORPEDOES;
-        System.out.println("====================SHOOT===============");
-        playerAction.heading = player.getHeadingBetween(target);
-      }
-    } else if (player.getBot().getSize() >= 50 && !player.isAfterburnerActive()) {
-      playerAction.action = PlayerActions.STARTAFTERBURNER;
-      System.out.println("====================AFTERBURNER===============");
-    } else if (player.isAfterburnerActive() && player.getBot().getSize() <= 50) {
-      playerAction.action = PlayerActions.STOPAFTERBURNER;
-      System.out.println("===================JAN BUNDIR=================");
+      
+      playerAction.action = PlayerActions.FIRETORPEDOES;
+      System.out.println("====================SHOOT===============");
+      playerAction.heading = player.getHeadingBetween(target);
+      
     } else {
       playerAction.action = PlayerActions.FORWARD;
       System.out.println("====================KEJAR MASBRO===============");

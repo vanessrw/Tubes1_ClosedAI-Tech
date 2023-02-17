@@ -113,7 +113,7 @@ public class Bot {
 
     } else if (category == "TRAVERSAL") {
       filteredList = objectList
-          .stream().filter(item -> item.getGameObjectType() == ObjectTypes.WORMHOLE)
+          .stream().filter(item -> item.getGameObjectType() == ObjectTypes.TELEPORTER)
           .sorted(Comparator
               .comparing(item -> BotUtil.getActualDistance(bot, item)))
           .collect(Collectors.toList());

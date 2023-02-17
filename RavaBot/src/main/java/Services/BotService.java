@@ -68,13 +68,15 @@ public class BotService extends Bot {
     // playerAction.heading = new Random().nextInt(360);
 
     if (!gameState.getPlayerGameObjects().isEmpty()) {
+
       // Teleporting
       if (this.isFiringTeleporter) {
         System.out.println("Is firing teleporter");
       }
 
+      // Check if teleporter still exists
       if (this.isFiringTeleporter && this.getNearestObjects(gameState.getGameObjects(), "TRAVERSAL").isEmpty()
-          && gameState.getWorld().getCurrentTick() - this.fireTeleporterTick > 40) {
+          && gameState.getWorld().getCurrentTick() - this.fireTeleporterTick > 3) {
         this.isFiringTeleporter = false;
       }
 
@@ -94,9 +96,6 @@ public class BotService extends Bot {
                 && largestSmallerEnemy.getSize() < this.bot.getSize()) {
               playerAction.action = PlayerActions.TELEPORT;
               playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
-
-              playerAction = BotAttack.checkAfterburner(this, playerAction);
-
               this.playerAction = playerAction;
               System.out.println("Teleporting..");
               this.isFiringTeleporter = false;
@@ -110,23 +109,11 @@ public class BotService extends Bot {
           && this.bot.getSize() > largestSmallerEnemy.getSize() && this.bot.getTeleportCount() > 0) {
         playerAction.action = PlayerActions.FIRETELEPORT;
         playerAction.heading = getHeadingBetween(largestSmallerEnemy);
-
-        playerAction = BotAttack.checkAfterburner(this, playerAction);
-
         this.playerAction = playerAction;
         this.fireTeleporterTick = gameState.getWorld().getCurrentTick();
         System.out.println("Ejecting teleporter..");
         this.isFiringTeleporter = true;
         return;
-      }
-
-      // Nearest enemy
-      List<GameObject> nearestEnemies = getNearestObjects(gameState.getPlayerGameObjects(), "ENEMY");
-      GameObject nearestEnemy;
-      if (!nearestEnemies.isEmpty()) {
-        nearestEnemy = nearestEnemies.get(0);
-      } else {
-        nearestEnemy = null;
       }
 
       // Nearest consumables
@@ -150,13 +137,12 @@ public class BotService extends Bot {
           System.out.println("Whoops.. to center");
         }
 
-        playerAction = BotAttack.checkAfterburner(this, playerAction);
-
         this.playerAction = playerAction;
         return;
       }
 
-      if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50) {
+      // Consider enemies
+      if (this.getBot().getTorpedoCount() >= 5 && this.getBot().getSize() >= 50 ) {
         boolean isOk = BotAttack.fireRandomTorpedo(this);
 
         if (isOk) {
@@ -164,10 +150,10 @@ public class BotService extends Bot {
         }
       }
 
-      if (nearestEnemy != null && this.getBot().getSize() - nearestEnemy.getSize() > 0
-          && BotUtil.getActualDistance(this.getBot(), nearestEnemy) < this.toll) {
+      if (getHighestRatioEnemy() != null && this.getBot().getSize() - getHighestRatioEnemy().getSize() > 0
+          && BotUtil.getActualDistance(this.getBot(), getHighestRatioEnemy()) < this.toll) {
         // Attack enemies
-        playerAction = BotAttack.attackEnemy(this, nearestEnemy);
+        playerAction = BotAttack.attackEnemy(this, getHighestRatioEnemy());
         System.out.println("Pew pew pew");
         this.playerAction = playerAction;
         return;
@@ -195,8 +181,6 @@ public class BotService extends Bot {
           playerAction.heading = getHeadingBetween(nearestObjectOutside.get(0));
           playerAction.action = PlayerActions.FORWARD;
 
-          playerAction = BotAttack.checkAfterburner(this, playerAction);
-
           this.playerAction = playerAction;
           System.out.println("Avoiding obstacles..");
           return;
@@ -206,8 +190,6 @@ public class BotService extends Bot {
       // Consider other targets
       playerAction.heading = BotMovement.getOptimalHeading(this, this.toll);
       playerAction.action = PlayerActions.FORWARD;
-
-      playerAction = BotAttack.checkAfterburner(this, playerAction);
 
       this.playerAction = playerAction;
     }
